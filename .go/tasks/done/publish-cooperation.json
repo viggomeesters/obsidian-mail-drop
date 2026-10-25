@@ -1,0 +1,104 @@
+{
+  "schema": "go-workflow.repo-local.task.v1",
+  "kind": "task",
+  "execution_mode": "agent",
+  "shareable_delivery": "none",
+  "id": "publish-cooperation",
+  "project": "obsidian-mail-drop",
+  "status": "done",
+  "summary": "Deliver Mail Drop cooperation on public main and release 0.10.0",
+  "description": "Deliver Mail Drop cooperation on public main and release 0.10.0",
+  "scope": {
+    "read": [
+      "src",
+      "scripts",
+      "docs"
+    ],
+    "modify": [
+      "README.md",
+      "CHANGELOG.md",
+      "docs",
+      "scripts",
+      ".gitignore"
+    ]
+  },
+  "acceptance": [
+    "Cooperation on public main, plain npm ci and verify pass, matching 0.10.0 release/assets downloaded and hash checked, actual official preview/build review recorded and supported install tested."
+  ],
+  "verification": [
+    "npm run verify"
+  ],
+  "claim": {
+    "agent": "codex",
+    "claimed_at": "2026-10-25T14:23:19+01:00",
+    "base_commit": "06132eea1fe3348eeb044524522490c842f05fd1"
+  },
+  "work_status": "completed",
+  "review_status": "review",
+  "review_history": [],
+  "evidence": [
+    {
+      "schema": "go-workflow.finish-evidence.v1",
+      "created_at": "2026-10-25T14:38:32+01:00",
+      "task_id": "publish-cooperation",
+      "agent": "codex",
+      "summary": "verification=npm run verify; result=passed,58 tests and native checks; critic=codex same_agent passed and official full review Completed with Dependencies Pass and byte-for-byte Build verification Pass; changed_files=README.md,CHANGELOG.md,docs/validation-0.10.0.md,src/main.ts,src/link-rules.ts,src/settings.ts,src/drop-links.ts,scripts/cooperation-smoke.mjs,tests/link-rules.test.ts,manifest.json,versions.json,package.json,package-lock.json; runtime=Codex; publication=public main and tag0.10.0 at2128250, ten release assets HTTP200 hash-matched; installation=actual fresh Community install0.10.0 and115 paired Obsidian checks, native off on new install; self_reflect=local integration is distinct from public main release and actual installation, central approach corrected; rollback=retain0.9.2 and main-vault preimages; limits=no new provider/mobile/minimum-version/Intel runtime claim, declared behavior warnings remain",
+      "changed_files": [
+        "README.md",
+        "CHANGELOG.md",
+        "docs/validation-0.10.0.md",
+        "src/main.ts",
+        "src/link-rules.ts",
+        "src/settings.ts",
+        "src/drop-links.ts",
+        "scripts/cooperation-smoke.mjs",
+        "tests/link-rules.test.ts",
+        "manifest.json",
+        "versions.json",
+        "package.json",
+        "package-lock.json"
+      ],
+      "no_diff": false,
+      "git": {
+        "claim_base_commit": "06132eea1fe3348eeb044524522490c842f05fd1",
+        "observed_head_commit": "854bf64b5203ee8bc7df0516e81ea272fa41f289"
+      },
+      "verification": {
+        "command": "npm run verify",
+        "result": "passed,58 tests and native checks"
+      },
+      "runtime": {
+        "agent": "codex",
+        "runtime": "Codex",
+        "model": null,
+        "billing_mode": "unknown"
+      },
+      "usage": {
+        "schema": "go-workflow.usage-attribution.v1",
+        "runtime_kind": "Codex",
+        "billing_mode": "unknown",
+        "owner": "codex",
+        "model": null,
+        "token_estimate": null,
+        "api_equivalent_cost_usd": null,
+        "provider_invoice_cost_usd": null,
+        "cost_label": "api_equivalent_not_invoice_cost"
+      },
+      "review": {
+        "outcome": "codex same_agent passed and official full review Completed with Dependencies Pass and byte-for-byte Build verification Pass",
+        "skip_reason": null
+      }
+    }
+  ],
+  "completion_evidence": {
+    "schema": "go-workflow.completion-evidence.v1",
+    "verification": {
+      "path": ".go/runs/publish-cooperation/completion/verification-0c2878f52a7144e79d2e0943c0512adf.json",
+      "sha256": "ea5f122f8309fe1240dd2b324f9593b1fdaf98ee26b778ffd9a7c99c3116eb00"
+    },
+    "critic": {
+      "path": ".go/runs/publish-cooperation/completion/critic-5f1dba3c6c964f3bb51a1a64ca6f157b.json",
+      "sha256": "900c2ea0c9d3f62dd402850e53e25b9a43ecc36b9b6e6e255d1d23f0b0b0aff0"
+    }
+  }
+}
