@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.2 — 2026-10-25
+
+- Build the standard plugin entirely with Node.js; generate the same bundled license notices without Python. This fixes the clean Community release-builder environment.
+
 ## 0.9.1 candidate
 
 - Require Obsidian 1.5.7 for the attachment-path API.

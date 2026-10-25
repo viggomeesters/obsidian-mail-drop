@@ -1,6 +1,6 @@
 # Mail Drop
 
-Import examples and candidate test evidence: [0.9.1 validation](docs/validation-0.9.1.md).
+Import examples and candidate test evidence: [validation](docs/validation-0.9.2.md).
 
 Drag emails from Apple Mail or Microsoft Outlook into an Obsidian note. Keep the original `.eml` beside the note, with a paperclip heading, a link, and a collapsed preview.
 
@@ -67,7 +67,7 @@ The receiver writes outside the vault only to its own private `obsidian-outlook-
 
 ## Build and verify
 
-The plugin build requires Node.js 22.12+ and Python 3. Building the optional receiver also requires macOS and Xcode Command Line Tools.
+The plugin build requires only Node.js 22.12+. Building the optional receiver also requires macOS and Xcode Command Line Tools; packaging the manual download archives uses Python 3.
 
 ```sh
 npm ci
