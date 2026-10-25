@@ -58,8 +58,8 @@
   "completion_evidence": {
     "schema": "go-workflow.completion-evidence.v1",
     "verification": {
-      "path": ".go/runs/community-readiness/completion/verification-c3564bc8e691426ab882846036c4c966.json",
-      "sha256": "21bfac86d121713f724cc19c700142122c68c541b63885c5f132d5cca7d35b9f"
+      "path": ".go/runs/community-readiness/completion/verification-6752f0860e614f9bb12065decf3c2ea4.json",
+      "sha256": "53b72021d51b233c43ba9c1041773ae41e13ff8cb4e06cce270d4603b1404d1d"
     }
   }
 }

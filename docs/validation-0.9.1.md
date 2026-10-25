@@ -2,7 +2,7 @@
 
 Validated on 25 October 2026 on macOS / Apple Silicon with Obsidian 1.13.7. This records local evidence; the authenticated Community preview is still pending. No 0.9.1 release has been published.
 
-- Clean `npm ci --legacy-peer-deps`: passed, zero known vulnerabilities.
+- Clean plain `npm ci`: passed, zero known vulnerabilities. The first Community preview of commit `eb456e8` found missing peer dependencies in the lockfile; it was regenerated with ordinary `npm install`, and the plain clean installation was rechecked.
 - Official recommended Obsidian ESLint configuration: zero errors and warnings.
 - 56 regression tests, TypeScript, minified build and universal macOS receiver build: passed.
 - Native classifier, pasteboard, completion and two-message watcher checks: passed.

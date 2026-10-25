@@ -70,7 +70,7 @@ The receiver writes outside the vault only to its own private `obsidian-outlook-
 Requires Node.js 22.12+, Python 3, macOS, and Xcode Command Line Tools.
 
 ```sh
-npm ci --legacy-peer-deps
+npm ci
 npm run lint
 npm test
 npm run build

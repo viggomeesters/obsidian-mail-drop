@@ -7,13 +7,13 @@ Keep changes focused on local, explicit imports. Preserve original file bytes, h
 Use Node.js 22.12+, Python 3, macOS and Xcode Command Line Tools.
 
 ```sh
-npm ci --legacy-peer-deps
+npm ci
 npm run verify
 npm audit
 npm run package
 ```
 
-The legacy peer-resolution option is required because the official Obsidian ESLint package declares an older exact Obsidian peer version. The plugin uses current typings; the explicit Moment override keeps the checker's transitive dependency patched. It does not change the runtime Obsidian API.
+The lockfile includes peer dependencies so the same plain `npm ci` works locally and in the Community scanner. The explicit Moment override keeps the checker’s transitive dependency patched; it does not change the runtime Obsidian API.
 
 Use a dedicated test vault with synthetic messages. Never develop or generate fixtures in your personal vault. Run standard three-file installation checks without a receiver, and opt-in reception checks with a separately installed executable. Distinguish automated host/fixture tests from real drags, and built architectures from tested hardware. See `docs/community-submission.md` for the release gate.
 
