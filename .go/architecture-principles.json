@@ -1,0 +1,13 @@
+{
+  "schema": "go-workflow.repo-local.architecture-principles.v1",
+  "kind": "architecture_principles",
+  "project": "obsidian-mail-drop",
+  "principles": [
+    {
+      "id": "preserve-originals",
+      "statement": "Preserve imported bytes",
+      "rationale": "Original mail is the source",
+      "enforcement": "Byte comparison tests"
+    }
+  ]
+}

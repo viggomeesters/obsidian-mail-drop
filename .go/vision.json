@@ -1,0 +1,19 @@
+{
+  "schema": "go-workflow.repo-local.vision.v1",
+  "kind": "vision",
+  "project": "obsidian-mail-drop",
+  "status": "active",
+  "north_star": "Reliable local email imports in Obsidian with honest installation and compatibility guarantees.",
+  "wedge": "Apple Mail and Outlook email drops on macOS.",
+  "target_user": "Obsidian desktop users importing email and documents.",
+  "core_promise": "Preserve original email bytes and create readable linked entries in the intended note.",
+  "product_principles": [
+    "Local processing and explicit external file access."
+  ],
+  "non_goals": [
+    "Sending mail or querying mailboxes."
+  ],
+  "success_metrics": [
+    "A standard plugin installation works as documented and review gates have reproducible evidence."
+  ]
+}

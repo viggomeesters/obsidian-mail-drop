@@ -4,7 +4,7 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 const out = 'outputs/obsidian-outlook-drop';
 execFileSync('node_modules/.bin/tsc', ['--noEmit'], { stdio: 'inherit' });
 mkdirSync(out, { recursive: true });
-const result = await build({ metafile: true, entryPoints: ['src/main.ts'], bundle: true, external: ['obsidian'], format: 'cjs', platform: 'node', target: 'es2020', outfile: `${out}/main.js` });
+const result = await build({ metafile: true, minify: true, entryPoints: ['src/main.ts'], bundle: true, external: ['obsidian'], format: 'cjs', platform: 'node', target: 'es2020', outfile: `${out}/main.js` });
 writeFileSync(`${out}/bundle-meta.json`, JSON.stringify(result.metafile));
 execFileSync('python3', ['scripts/third-party-notices.py'], { stdio: 'inherit' });
 if (process.platform !== 'darwin') {

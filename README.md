@@ -1,29 +1,26 @@
 # Mail Drop
 
+Import examples and candidate test evidence: [0.9.1 validation](docs/validation-0.9.1.md).
+
 Drag emails from Apple Mail or Microsoft Outlook into an Obsidian note. Keep the original `.eml` beside the note, with a paperclip heading, a link, and a collapsed preview.
 
 Mail Drop also controls attachment links: embed images and link PDFs, spreadsheets, and other documents. Optional date prefixes and kebab-case names keep new files consistent.
 
 ## Compatibility
 
-- Obsidian desktop 1.5.0 or later.
+- Obsidian desktop 1.5.7 or later.
 - Native email dragging requires macOS 13 or later and the included receiver.
 - Apple Silicon has been tested with real Apple Mail and Outlook drops. The universal receiver also builds for Intel; real Intel execution has not yet been tested.
 - Mobile is unsupported. Other desktop platforms have not been validated for a public release.
 - This is an early release. Email apps may expose different drag formats across versions. Drag the message from the message list onto the text of an open Markdown note.
 
-## Install on macOS
+## Install
 
-1. Download `mail-drop-0.9.0-macos.zip` from [Releases](https://github.com/viggomeesters/obsidian-mail-drop/releases).
-2. Quit Obsidian or disable an existing installation of the plugin.
-3. Extract the `outlook-drop-importer` folder into `<your-vault>/.obsidian/plugins/`.
-4. Enable **Mail Drop** in **Settings → Community plugins**. Obsidian may first ask you to enable community plugins.
+The Community-style installation consists of `main.js`, `manifest.json` and `styles.css`. Copy those assets into `<your-vault>/.obsidian/plugins/outlook-drop-importer/` and enable **Mail Drop**. A complete ZIP is also available from [Releases](https://github.com/viggomeesters/obsidian-mail-drop/releases). Keep your existing `data.json` when upgrading.
 
-The folder must contain `main.js`, `manifest.json`, `styles.css`, and the executable `outlook-file-promises`. The old folder and plugin ID are retained so existing settings continue to work. When upgrading, keep your existing `data.json`; release packages never include personal settings.
+The plugin is not yet listed in the Community directory. The legacy plugin ID is retained so existing settings continue to work.
 
-The native receiver is ad-hoc signed, not Apple notarized. If macOS blocks it, check the source and follow your normal macOS security review before allowing it. If the file lost its executable permission during copying, restore it with `chmod +x <your-vault>/.obsidian/plugins/outlook-drop-importer/outlook-file-promises`.
-
-**Community directory:** not submitted. The standard installer fetches only `main.js`, `manifest.json`, and optionally `styles.css`; it does not install this extra native executable. Use the complete ZIP. Mail Drop does not download or install its own dependencies.
+**Direct dragging from Apple Mail or Outlook requires a separate macOS receiver.** New installations keep native dragging off. Ordinary EML file imports and document/image drops work without it. Follow the [receiver installation guide](docs/native-receiver.md) to install the executable yourself, enable **Native email dragging**, and connect its path. Mail Drop does not download or install dependencies. The receiver is ad-hoc signed, not Apple notarized.
 
 ## What a drop creates
 
@@ -54,15 +51,17 @@ Dropping the same email again reuses matching files and links. Different content
 | Email preview | Add readable email text in a collapsed callout. |
 | Extract email attachments | Save explicit attachments beside the EML and add plain links. Inline images stay in the email. Off by default. |
 | Added by | Optional name in new email entries. Blank by default. |
+| Native email dragging | Optional macOS reception with a separately installed executable. Off on new installations. |
+| Receiver path | Absolute path to the existing receiver; select Connect after editing. |
 | File types to link | Comma-separated extensions; shown in “Choose by file type” mode. |
 
 Naming rules apply to external files. Internal vault drags create links without copying or renaming files. Document drops follow Obsidian's attachment-folder preference; email files are saved beside their target note.
 
 ## Privacy and file access
 
-All parsing and previews run locally. There are no network requests, accounts, telemetry, remote images, or cloud parsing. Email HTML is converted to text, not executed or rendered as active HTML.
+All parsing and previews run locally. There are no background network requests, accounts, telemetry, remote images, or cloud parsing. The installation-guide button opens GitHub in your browser; it sends no email content. Email HTML is converted to text, not executed or rendered as active HTML.
 
-On macOS, the plugin runs one bundled AppKit receiver while enabled. It inspects drag-pasteboard types to recognize email drags and temporarily shows a non-activating drop target over visible Markdown panes. It does not query the mailbox database, export selected mail through AppleScript, or send mail.
+On macOS, explicit native opt-in runs one separately installed AppKit receiver. It inspects drag-pasteboard types to recognize email drags and temporarily shows a non-activating drop target over visible Markdown panes. It does not query the mailbox database, export selected mail through AppleScript, or send mail.
 
 The receiver writes outside the vault only to its own private `obsidian-outlook-*` directories under the system temporary directory. The plugin reads received EML files from those directories and removes each directory only after successful import. Native file-drop handling necessarily reads files you drag from outside the vault. No background scan of your files or mailboxes is performed. Diagnostic events include filenames and target-note paths, but not email bodies; remove personal information before reporting an issue.
 
@@ -71,7 +70,8 @@ The receiver writes outside the vault only to its own private `obsidian-outlook-
 Requires Node.js 22.12+, Python 3, macOS, and Xcode Command Line Tools.
 
 ```sh
-npm ci
+npm ci --legacy-peer-deps
+npm run lint
 npm test
 npm run build
 outputs/obsidian-outlook-drop/outlook-file-promises --self-test

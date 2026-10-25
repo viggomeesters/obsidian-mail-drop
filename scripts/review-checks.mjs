@@ -1,0 +1,22 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import ts from 'typescript';
+import {execFileSync} from 'node:child_process';
+const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+const versions=JSON.parse(fs.readFileSync('versions.json','utf8'));
+const packageInfo=JSON.parse(fs.readFileSync('package.json','utf8'));
+const assert=(value,message)=>{if(!value)throw new Error(message);};
+assert(manifest.version===packageInfo.version,'Package/manifest versions differ.');
+assert(versions[manifest.version]===manifest.minAppVersion,'Minimum version map differs.');
+assert(manifest.minAppVersion==='1.5.7','Review API compatibility before changing the minimum.');
+assert(manifest.isDesktopOnly===true,'Node APIs require desktop-only.');
+assert(/^[a-z-]+$/.test(manifest.id)&&!manifest.id.includes('obsidian')&&!manifest.id.endsWith('plugin'),'Invalid plugin ID.');
+assert(manifest.description.length<=250&&manifest.description.endsWith('.'),'Invalid description.');
+for(const file of ['README.md','LICENSE','SECURITY.md','CONTRIBUTING.md','CHANGELOG.md','docs/community-submission.md','docs/native-receiver.md','THIRD_PARTY_NOTICES.md'])assert(fs.existsSync(file),`Missing ${file}`);
+const bundle=fs.readFileSync('outputs/obsidian-outlook-drop/main.js','utf8');
+const tree=ts.createSourceFile('main.js',bundle,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);
+function walk(node){if((ts.isCallExpression(node)||ts.isNewExpression(node))&&ts.isIdentifier(node.expression)&&['eval','Function'].includes(node.expression.text))throw new Error('Dynamic evaluation in release bundle.');ts.forEachChild(node,walk);}
+walk(tree);
+assert(!fs.readFileSync('styles.css','utf8').includes('!important'),'Review CSS override.');
+for(const flag of ['--self-test','--pasteboard-self-test','--materialization-self-test','--materialization-flow-self-test'])execFileSync(path.resolve('outputs/obsidian-outlook-drop/outlook-file-promises'),[flag],{stdio:'inherit'});
+console.log('Manifest, release documentation, bundle AST and native checks passed.');

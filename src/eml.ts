@@ -28,7 +28,7 @@ export async function parseEml(data: ArrayBuffer): Promise<ImportedEmail> {
 function toArrayBuffer(value: string | ArrayBuffer | Uint8Array): ArrayBuffer {
 	if (value instanceof ArrayBuffer) return value;
 	if (typeof value === "string") return new TextEncoder().encode(value).buffer;
-	return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength) as ArrayBuffer;
+	return Uint8Array.from(value).buffer;
 }
 
 function formatAddress(address: { name?: string; address?: string } | undefined): string {

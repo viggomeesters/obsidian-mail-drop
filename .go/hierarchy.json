@@ -1,0 +1,21 @@
+{
+  "schema": "go-workflow.repo-local.hierarchy.v1",
+  "kind": "hierarchy",
+  "project": "obsidian-mail-drop",
+  "epics": [
+    {
+      "id": "community-readiness",
+      "title": "Community publication readiness",
+      "features": [
+        {
+          "id": "review-fixes",
+          "title": "Repair compatibility, distribution, review and test evidence",
+          "tasks": [
+            "community-readiness"
+          ]
+        }
+      ],
+      "tasks": []
+    }
+  ]
+}

@@ -29,3 +29,15 @@ files = [*sources, archive.name]
 checksums = "".join(f"{hashlib.sha256((output / name).read_bytes()).hexdigest()}  {name}\n" for name in files)
 (output / "SHA256SUMS.txt").write_text(checksums)
 print(output)
+
+# Separate externally installed receiver, plus a standard three-file plugin ZIP.
+receiver_archive = output / f"mail-drop-receiver-{version}-macos.zip"
+with zipfile.ZipFile(receiver_archive, "w", zipfile.ZIP_DEFLATED) as zip_file:
+    for name in ["outlook-file-promises", "LICENSE"]:
+        zip_file.write(output / name, f"mail-drop-receiver/{name}")
+standard_archive = output / f"mail-drop-{version}-standard.zip"
+with zipfile.ZipFile(standard_archive, "w", zipfile.ZIP_DEFLATED) as zip_file:
+    for name in ["main.js", "manifest.json", "styles.css"]:
+        zip_file.write(output / name, f"{manifest['id']}/{name}")
+files.extend([receiver_archive.name, standard_archive.name])
+(output / "SHA256SUMS.txt").write_text("".join(f"{hashlib.sha256((output / name).read_bytes()).hexdigest()}  {name}\n" for name in files))

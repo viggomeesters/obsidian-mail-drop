@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.1 candidate
+
+- Require Obsidian 1.5.7 for the attachment-path API.
+- Make native dragging an explicit option with a separately installed receiver; standard file imports start without it.
+- Add strict official lint, typed settings migration, safer binary copying and delayed layout initialization.
+- Add security/contribution/install/review documentation and separate standard/receiver packages.
+- Keep Community preview pending until an authenticated server scan is recorded.
+
 ## 0.9.0
 
 - Rename the display name to Mail Drop; retain the existing plugin ID for upgrades.

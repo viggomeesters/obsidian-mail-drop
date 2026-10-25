@@ -14,12 +14,12 @@ export interface AttachmentStore {
  link(path:string):string;
 }
 export function safeEmlName(name:string):string {
- let stem=name.replace(/\.eml$/i,"").replace(/[\\/:*?"<>|#^\[\]\x00-\x1f\x7f]/g,"-").replace(/^\.+/,"").trim();
+ let stem=name.replace(/\.eml$/i,"").replace(/[\\/:*?"<>|#^\u005B\u005D\p{Cc}]/gu,"-").replace(/^\.+/,"").trim();
  while(new TextEncoder().encode(stem).length>200)stem=Array.from(stem).slice(0,-1).join("");
  return `${stem||"Outlook-mail"}.eml`;
 }
 export function attachmentBlock(link:string,when:Date,subject?:string,author=""):string {
- const name=mailLiteral(author.replace(/[\x00-\x1f\x7f]+/g," ").trim());
+ const name=mailLiteral(author.replace(/[\p{Cc}]+/gu," ").trim());
  return `# 📎 ${mailTitle(subject).slice("Mail · ".length)}\n\nAdded on ${localDate(when)}${name?` · ${name}`:""}\n\n${link}\n`;
 }
 export function sameBytes(a:ArrayBuffer,b:ArrayBuffer):boolean {

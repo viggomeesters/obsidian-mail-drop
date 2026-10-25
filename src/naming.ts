@@ -52,7 +52,7 @@ export function sameImportName(original:string,existing:string):boolean {
 
 /** Safe single filename even when MIME supplies a path or Obsidian link punctuation. */
 export function safeAttachmentName(original:string):string {
- let name=original.normalize("NFC").replace(/[\\/:*?"<>|#^\[\]\x00-\x1f\x7f]/g,"-").replace(/^\.+/,"").trim();
+ let name=original.normalize("NFC").replace(/[\\/:*?"<>|#^\u005B\u005D\p{Cc}]/gu,"-").replace(/^\.+/,"").trim();
  if(!name||/^\.+$/.test(name))name="attachment";
  if(new TextEncoder().encode(name).length<=230)return name;
  const {stem,extension}=splitFilename(name);let short=stem;

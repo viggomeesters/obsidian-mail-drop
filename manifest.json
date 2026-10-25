@@ -1,8 +1,8 @@
 {
   "id": "outlook-drop-importer",
   "name": "Mail Drop",
-  "version": "0.9.0",
-  "minAppVersion": "1.5.0",
+  "version": "0.9.1",
+  "minAppVersion": "1.5.7",
   "description": "Save dropped Apple Mail and Outlook .eml files beside the target note with an attachment log.",
   "author": "Viggo Meesters",
   "isDesktopOnly": true

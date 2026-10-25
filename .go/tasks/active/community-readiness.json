@@ -1,0 +1,65 @@
+{
+  "schema": "go-workflow.repo-local.task.v1",
+  "kind": "task",
+  "execution_mode": "agent",
+  "shareable_delivery": "none",
+  "id": "community-readiness",
+  "project": "obsidian-mail-drop",
+  "status": "active",
+  "summary": "Repair plugin compatibility, standard installation, lint, documentation and review evidence",
+  "description": "Address the explicitly requested Mail Drop publication gaps against the central Obsidian checklist. Native reception remains an explicit externally installed dependency, with standard three-file installation functioning without it. Official preview is a separate authenticated external gate.",
+  "scope": {
+    "read": [
+      "src/**",
+      "native/**",
+      "scripts/**",
+      "tests/**",
+      "README.md",
+      "manifest.json",
+      "versions.json",
+      "package*.json"
+    ],
+    "modify": [
+      "src/**",
+      "scripts/**",
+      "tests/**",
+      "docs/**",
+      "assets/**",
+      "native/**",
+      "README.md",
+      "SECURITY.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "manifest.json",
+      "versions.json",
+      "package*.json",
+      "eslint.config.mjs",
+      ".gitignore",
+      "AGENTS.md",
+      ".go/**",
+      "go"
+    ]
+  },
+  "acceptance": [
+    "Manifest requires at least Obsidian 1.5.7 and standard main.js/manifest/styles installation starts without a missing executable error; direct app drags use an explicitly configured installed receiver; official lint, tests, isolated test-vault checks and bundle scans pass; SECURITY and CONTRIBUTING exist; authenticated preview is recorded honestly before claiming Community readiness."
+  ],
+  "verification": [
+    "npm run verify"
+  ],
+  "claim": {
+    "agent": "codex",
+    "claimed_at": "2026-10-25T09:00:58+01:00",
+    "base_commit": "d6f58ca2e9556aebf58f992c45b221a5922e2c03"
+  },
+  "work_status": "in_progress",
+  "review_status": "none",
+  "review_history": [],
+  "evidence": [],
+  "completion_evidence": {
+    "schema": "go-workflow.completion-evidence.v1",
+    "verification": {
+      "path": ".go/runs/community-readiness/completion/verification-c3564bc8e691426ab882846036c4c966.json",
+      "sha256": "21bfac86d121713f724cc19c700142122c68c541b63885c5f132d5cca7d35b9f"
+    }
+  }
+}

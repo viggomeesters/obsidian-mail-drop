@@ -4,3 +4,5 @@ outputs/
 *.log
 # Local vault integration scripts contain private vault locations.
 tests/live-*.js
+# Local workflow command logs can contain machine-specific paths.
+.go/runs/

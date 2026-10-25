@@ -7,10 +7,10 @@ export function localDate(value:Date|string,timeZone?:string):string {
  return `${part("day")} ${part("month").replace(/\.$/,"")} ${part("year")} at ${part("hour")}:${part("minute")}`;
 }
 export function mailLiteral(value:string):string {
- return value.replace(/[&<>\\`*_{}\[\]!#|~]/g,char=>`&#${char.charCodeAt(0)};`);
+ return value.replace(/[&<>\\`*_{}\u005B\u005D!#|~]/g,char=>`&#${char.charCodeAt(0)};`);
 }
 export function mailTitle(subject?:string):string {
- const text=(subject??"").replace(/[\x00-\x1f\x7f]+/g," ").replace(/\s+/g," ").trim()||"No subject";
+ const text=(subject??"").replace(/[\p{Cc}]+/gu," ").replace(/\s+/g," ").trim()||"No subject";
  const chars=Array.from(text);
  return "Mail · "+mailLiteral(chars.length>160?chars.slice(0,159).join("")+"…":text);
 }
