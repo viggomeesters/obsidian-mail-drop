@@ -1,0 +1,40 @@
+{
+  "schema": "go-workflow.repo-local.task.v1",
+  "kind": "task",
+  "execution_mode": "agent",
+  "shareable_delivery": "none",
+  "id": "publish-cooperation",
+  "project": "obsidian-mail-drop",
+  "status": "active",
+  "summary": "Deliver Mail Drop cooperation on public main and release 0.10.0",
+  "description": "Deliver Mail Drop cooperation on public main and release 0.10.0",
+  "scope": {
+    "read": [
+      "src",
+      "scripts",
+      "docs"
+    ],
+    "modify": [
+      "README.md",
+      "CHANGELOG.md",
+      "docs",
+      "scripts",
+      ".gitignore"
+    ]
+  },
+  "acceptance": [
+    "Cooperation on public main, plain npm ci and verify pass, matching 0.10.0 release/assets downloaded and hash checked, actual official preview/build review recorded and supported install tested."
+  ],
+  "verification": [
+    "npm run verify"
+  ],
+  "claim": {
+    "agent": "codex",
+    "claimed_at": "2026-10-25T14:23:19+01:00",
+    "base_commit": "06132eea1fe3348eeb044524522490c842f05fd1"
+  },
+  "work_status": "in_progress",
+  "review_status": "none",
+  "review_history": [],
+  "evidence": []
+}

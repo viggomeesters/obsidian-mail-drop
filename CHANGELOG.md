@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.0 — 2026-10-25
+
+- Optional Attachment Link Rules cooperation for document syntax; retain date + kebab-case names and original bytes.
+- Preserve native Wiki/Markdown link preferences in cooperative mode.
+- Suppress duplicate observer rewrites for managed drops; retain safe native fallback if the rules provider is unavailable.
+
 ## 0.9.2 — 2026-10-25
 
 - Build the standard plugin entirely with Node.js; generate the same bundled license notices without Python. This fixes the clean Community release-builder environment.
@@ -30,9 +36,3 @@
 ## Earlier development
 
 Original EML preservation, collapsed previews, paperclip headings, attachment extraction, duplicate protection, and configurable links and filenames.
-
-## 0.10.0 — local candidate
-
-- Optional Attachment Link Rules cooperation for document syntax; retain date + kebab-case names and original bytes.
-- Preserve native Wiki/Markdown link preferences in cooperative mode.
-- Suppress duplicate observer rewrites for managed drops; retain safe native fallback if the rules provider is unavailable.
