@@ -1,0 +1,111 @@
+{
+  "schema": "go-workflow.repo-local.task.v1",
+  "kind": "task",
+  "execution_mode": "agent",
+  "shareable_delivery": "none",
+  "id": "attachment-rule-cooperation",
+  "project": "obsidian-mail-drop",
+  "status": "done",
+  "summary": "Delegate attachment syntax while preserving naming and mail import",
+  "description": "Explicit cooperation with Attachment Link Rules; preserve document names and bytes, native link style, and email behavior; safe absent-plugin fallback. Local integration only, no push/public release.",
+  "scope": {
+    "read": [
+      "src",
+      "tests",
+      "scripts",
+      "README.md"
+    ],
+    "modify": [
+      "src",
+      "tests",
+      "scripts",
+      "README.md",
+      "docs",
+      "CHANGELOG.md",
+      "manifest.json",
+      "versions.json",
+      "package.json",
+      "package-lock.json"
+    ]
+  },
+  "acceptance": [
+    "Both plugins produce one stored attachment and one link with date kebab names, images-only embeds, native Wiki/Markdown style and unchanged email route; missing formatter falls back safely; actual isolated Obsidian acceptance and local validation pass."
+  ],
+  "verification": [
+    "npm run verify"
+  ],
+  "claim": {
+    "agent": "codex",
+    "claimed_at": "2026-10-25T13:41:27+01:00",
+    "base_commit": "fb6795ab950b6792db844a6478822d86ebd8b5b3"
+  },
+  "work_status": "completed",
+  "review_status": "review",
+  "review_history": [],
+  "evidence": [
+    {
+      "schema": "go-workflow.finish-evidence.v1",
+      "created_at": "2026-10-25T13:55:49+01:00",
+      "task_id": "attachment-rule-cooperation",
+      "agent": "codex",
+      "summary": "verification=npm run verify; result=passed; critic=codex same_agent passed, no blocking findings; runtime=Codex; changed_files=.go/hierarchy.json, .go/tasks/active/attachment-rule-cooperation.json, CHANGELOG.md, README.md, manifest.json, package-lock.json, package.json, scripts/cooperation-smoke.mjs, src/drop-links.ts, src/link-rules.ts, src/main.ts, src/settings.ts, tests/link-rules.test.ts, versions.json; acceptance=115 actual isolated Obsidian checks passed, candidates installed and hash-matched, native receiver connected; publication=local only, no push or release; self_reflect=installed-only inventory gap addressed by reuse check in central plugin approach",
+      "changed_files": [
+        ".go/hierarchy.json",
+        ".go/tasks/active/attachment-rule-cooperation.json",
+        "CHANGELOG.md",
+        "README.md",
+        "manifest.json",
+        "package-lock.json",
+        "package.json",
+        "scripts/cooperation-smoke.mjs",
+        "src/drop-links.ts",
+        "src/link-rules.ts",
+        "src/main.ts",
+        "src/settings.ts",
+        "tests/link-rules.test.ts",
+        "versions.json"
+      ],
+      "no_diff": false,
+      "git": {
+        "claim_base_commit": "fb6795ab950b6792db844a6478822d86ebd8b5b3",
+        "observed_head_commit": "c5bedbe33cc5c774843383fc8bb33a4d9a2eb70e"
+      },
+      "verification": {
+        "command": "npm run verify",
+        "result": "passed"
+      },
+      "runtime": {
+        "agent": "codex",
+        "runtime": "Codex",
+        "model": null,
+        "billing_mode": "unknown"
+      },
+      "usage": {
+        "schema": "go-workflow.usage-attribution.v1",
+        "runtime_kind": "Codex",
+        "billing_mode": "unknown",
+        "owner": "codex",
+        "model": null,
+        "token_estimate": null,
+        "api_equivalent_cost_usd": null,
+        "provider_invoice_cost_usd": null,
+        "cost_label": "api_equivalent_not_invoice_cost"
+      },
+      "review": {
+        "outcome": "codex same_agent passed, no blocking findings",
+        "skip_reason": null
+      }
+    }
+  ],
+  "completion_evidence": {
+    "schema": "go-workflow.completion-evidence.v1",
+    "verification": {
+      "path": ".go/runs/attachment-rule-cooperation/completion/verification-9ffe68dd4ba84c86964238183b2e917c.json",
+      "sha256": "ad02a4fda7b6d20f6058c6929c5d0109494d0e4e22a7a73d375194e91b8c309d"
+    },
+    "critic": {
+      "path": ".go/runs/attachment-rule-cooperation/completion/critic-3ef5ae716b814cd29be6e157fd0edace.json",
+      "sha256": "d5a20eb87c29b257a777fc1c95ddec10d3efdee96f04016f61f03785d113d87a"
+    }
+  }
+}
