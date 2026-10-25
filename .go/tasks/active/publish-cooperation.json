@@ -36,5 +36,16 @@
   "work_status": "in_progress",
   "review_status": "none",
   "review_history": [],
-  "evidence": []
+  "evidence": [],
+  "completion_evidence": {
+    "schema": "go-workflow.completion-evidence.v1",
+    "verification": {
+      "path": ".go/runs/publish-cooperation/completion/verification-0c2878f52a7144e79d2e0943c0512adf.json",
+      "sha256": "ea5f122f8309fe1240dd2b324f9593b1fdaf98ee26b778ffd9a7c99c3116eb00"
+    },
+    "critic": {
+      "path": ".go/runs/publish-cooperation/completion/critic-5f1dba3c6c964f3bb51a1a64ca6f157b.json",
+      "sha256": "900c2ea0c9d3f62dd402850e53e25b9a43ecc36b9b6e6e255d1d23f0b0b0aff0"
+    }
+  }
 }
