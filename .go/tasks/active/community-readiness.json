@@ -64,8 +64,8 @@
       "sha256": "91dc05981b67f69643161cdbf36b8290e66153ee81831b7a83b1a6ec8b64ca94"
     },
     "critic": {
-      "path": ".go/runs/community-readiness/completion/critic-71a0bc1b6f7c4748abc54cef5610d954.json",
-      "sha256": "32ec02841566beb6d5efb909a178691017f6f5847dc3ec508b148daa1afcea1b"
+      "path": ".go/runs/community-readiness/completion/critic-3587379d029a4ee3b6e93eb054377288.json",
+      "sha256": "63207f8220f7de1018b3ffd59c8f25ef25a7a5402330483320094c2f5a642318"
     }
   }
 }
