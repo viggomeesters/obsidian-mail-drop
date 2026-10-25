@@ -1,4 +1,4 @@
-export type DropMode="images-only"|"custom"|"obsidian";
+export type DropMode="images-only"|"custom"|"obsidian"|"link-rules";
 export function isImageFile(name:string):boolean {
  return /\.(avif|bmp|gif|jpe?g|png|svg|webp)$/i.test(name);
 }

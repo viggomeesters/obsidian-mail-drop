@@ -4,6 +4,8 @@ import { NativeBridge, NativeEvent, NativeTarget, helperPath, nativeMailFiles } 
 import { rm } from "node:fs/promises";
 import { DropMode, linkedExtensions, wantsPlainLink, droppedFileLink } from "./drop-links";
 
+import {claimAttachmentDrop,delegateAttachmentLink} from "./link-rules";
+
 import {readSettings,defaultSettings,type MailDropSettings} from "./settings";
 import {installedReceiver} from "./receiver";
 
@@ -94,6 +96,7 @@ export default class OutlookDropImporter extends Plugin {
   // Read native file objects synchronously: DataTransfer is protected after drop.
   const files=droppedMails(event.dataTransfer);
   if(!files.length) {this.handleDocumentDrop(event);return;}
+  claimAttachmentDrop((event.target as Node|null)?.ownerDocument??document,event);
   event.preventDefault();
   event.stopImmediatePropagation();
   const element=event.target as Node|null;
@@ -114,6 +117,7 @@ export default class OutlookDropImporter extends Plugin {
   const extensions=linkedExtensions(this.settings.linkExtensions),mode=this.settings.dropMode;
   if(mode==="obsidian"||(mode==="custom"&&!extensions.size))return;
   const external=Array.from(event.dataTransfer?.files??[]);
+  if(mode==="link-rules"&&!external.length)return;
   let internal:TFile[]=[];
   // Obsidian's own drag descriptors are stable in the installed host. Require its URI as well,
   // so stale descriptors can never turn an unrelated text/browser drop into a file drop.
@@ -123,7 +127,7 @@ export default class OutlookDropImporter extends Plugin {
    if(drag?.type==="file"&&drag.file instanceof TFile)internal=[drag.file];
    else if(drag?.type==="files"&&drag.files?.every(file=>file instanceof TFile))internal=drag.files;
   }
-  if(!(external.length&&this.settings.nameMode!=="original")&&![...external,...internal].some(file=>wantsPlainLink(file.name,extensions,mode)))return;
+  if(mode!=="link-rules"&&!(external.length&&this.settings.nameMode!=="original")&&![...external,...internal].some(file=>wantsPlainLink(file.name,extensions,mode)))return;
   let view:MarkdownView|undefined;
   this.app.workspace.iterateAllLeaves(leaf=>{
    if(leaf.view instanceof MarkdownView&&event.target&&leaf.view.containerEl.contains(event.target as Node))view=leaf.view;
@@ -132,6 +136,7 @@ export default class OutlookDropImporter extends Plugin {
   const target=view,note=view.file,editor=view.editor;
   const when=new Date();
   const snapshot={text:editor.getValue(),from:editor.getCursor("from"),to:editor.getCursor("to")};
+  claimAttachmentDrop(target.containerEl.ownerDocument,event);
   event.preventDefault();event.stopImmediatePropagation();
   this.pending=this.pending.then(async()=>{
    const files=[...internal];
@@ -153,7 +158,15 @@ export default class OutlookDropImporter extends Plugin {
     if(!created)throw Error("No available filename found.");
     files.push(created);
    }
-   const links=files.map(file=>droppedFileLink(file.name,this.app.metadataCache.fileToLinktext(file,note.path,true),extensions,mode)).join("\n");
+   let formatterMissing=false;
+   const links=files.map(file=>{
+    if(mode!=="link-rules")return droppedFileLink(file.name,this.app.metadataCache.fileToLinktext(file,note.path,true),extensions,mode);
+    const nativeLink=this.app.fileManager.generateMarkdownLink(file,note.path).trimEnd();
+    const result=delegateAttachmentLink(target.containerEl.ownerDocument,file.name,nativeLink);
+    if(!result.handled)formatterMissing=true;
+    return result.link;
+   }).join("\n");
+   if(formatterMissing)new Notice("Attachment rules unavailable. Native link style was used. Enable a compatible rules plugin or choose another attachment mode.",10000);
    if(target.file===note&&target.getMode()==="source"&&editor.getValue()===snapshot.text) {
     editor.replaceRange(links,snapshot.from,snapshot.to,"input");await target.save();
    } else {
@@ -270,10 +283,12 @@ class DropSettingsTab extends PluginSettingTab {
   const definitions:{name:string;render:(setting:Setting)=>void}[]=[];
   const add=(name:string,render:(setting:Setting)=>unknown):void=>{definitions.push({name,render:setting=>{render(setting);}});};
   add("Attachment drops", setting=>setting
+   .setDesc(this.plugin.settings.dropMode==="link-rules"?"Link style is set in the rules plugin. File names are set here.":"")
    .addDropdown(dropdown=>dropdown
     .addOption("images-only","Embed images only")
     .addOption("custom","Choose by file type")
     .addOption("obsidian","Obsidian default")
+    .addOption("link-rules","Use attachment rules")
     .setValue(this.plugin.settings.dropMode)
     .onChange(async value=>{this.plugin.settings.dropMode=value as DropMode;await this.plugin.saveData(this.plugin.settings);this.renderControls();})));
   add("File names", setting=>setting

@@ -11,7 +11,7 @@ export function readSettings(input:unknown):MailDropSettings {
  const existing=Object.keys(saved).length>0;
  return {
   linkExtensions:typeof saved.linkExtensions==='string'?saved.linkExtensions:'pdf',
-  dropMode:saved.dropMode==='images-only'||saved.dropMode==='custom'||saved.dropMode==='obsidian'?saved.dropMode:existing?'custom':'images-only',
+  dropMode:saved.dropMode==='link-rules'||saved.dropMode==='images-only'||saved.dropMode==='custom'||saved.dropMode==='obsidian'?saved.dropMode:existing?'custom':'images-only',
   nameMode:saved.nameMode==='date-kebab'||saved.nameMode==='kebab'||saved.nameMode==='original'?saved.nameMode:existing?'original':'date-kebab',
   mailPreview:typeof saved.mailPreview==='boolean'?saved.mailPreview:true,
   extractAttachments:typeof saved.extractAttachments==='boolean'?saved.extractAttachments:false,

@@ -11,7 +11,8 @@
           "id": "review-fixes",
           "title": "Repair compatibility, distribution, review and test evidence",
           "tasks": [
-            "community-readiness"
+            "community-readiness",
+            "attachment-rule-cooperation"
           ]
         }
       ],

@@ -1,0 +1,53 @@
+{
+  "schema": "go-workflow.repo-local.task.v1",
+  "kind": "task",
+  "execution_mode": "agent",
+  "shareable_delivery": "none",
+  "id": "attachment-rule-cooperation",
+  "project": "obsidian-mail-drop",
+  "status": "active",
+  "summary": "Delegate attachment syntax while preserving naming and mail import",
+  "description": "Explicit cooperation with Attachment Link Rules; preserve document names and bytes, native link style, and email behavior; safe absent-plugin fallback. Local integration only, no push/public release.",
+  "scope": {
+    "read": [
+      "src",
+      "tests",
+      "scripts",
+      "README.md"
+    ],
+    "modify": [
+      "src",
+      "tests",
+      "scripts",
+      "README.md",
+      "docs",
+      "CHANGELOG.md",
+      "manifest.json",
+      "versions.json",
+      "package.json",
+      "package-lock.json"
+    ]
+  },
+  "acceptance": [
+    "Both plugins produce one stored attachment and one link with date kebab names, images-only embeds, native Wiki/Markdown style and unchanged email route; missing formatter falls back safely; actual isolated Obsidian acceptance and local validation pass."
+  ],
+  "verification": [
+    "npm run verify"
+  ],
+  "claim": {
+    "agent": "codex",
+    "claimed_at": "2026-10-25T13:41:27+01:00",
+    "base_commit": "fb6795ab950b6792db844a6478822d86ebd8b5b3"
+  },
+  "work_status": "in_progress",
+  "review_status": "none",
+  "review_history": [],
+  "evidence": [],
+  "completion_evidence": {
+    "schema": "go-workflow.completion-evidence.v1",
+    "verification": {
+      "path": ".go/runs/attachment-rule-cooperation/completion/verification-c3d8d66543b44ba19b30d851a3e80c4f.json",
+      "sha256": "453496a54a07947d31d243bf1ee7b5808eeda3d6374482778e7ada1870367e5d"
+    }
+  }
+}
