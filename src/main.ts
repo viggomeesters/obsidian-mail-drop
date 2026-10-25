@@ -1,0 +1,264 @@
+import { FileSystemAdapter, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TFile, TFolder } from "obsidian";
+import { importAttachments, MailFile, sameBytes } from "./attachments";
+import { NativeBridge, NativeEvent, NativeTarget, helperPath, nativeMailFiles } from "./native";
+import { rm } from "node:fs/promises";
+import { DropMode, linkedExtensions, wantsPlainLink, droppedFileLink } from "./drop-links";
+
+import {attachmentFilename, NameMode, numberedFilename, sameImportName} from "./naming";
+
+export function droppedMails(transfer: DataTransfer | null): File[] {
+ const files=Array.from(transfer?.files ?? []);
+ if(!files.length) for(const item of Array.from(transfer?.items ?? [])) {
+  if(item.kind==="file") {const file=item.getAsFile();if(file) files.push(file);}
+ }
+ return files.filter(file=>/\.eml$/i.test(file.name));
+}
+
+export default class OutlookDropImporter extends Plugin {
+ private pending: Promise<void>=Promise.resolve();
+ settings:{linkExtensions:string;dropMode:DropMode;nameMode:NameMode;mailPreview:boolean;extractAttachments:boolean;logAuthor:string}={linkExtensions:"pdf",dropMode:"images-only",nameMode:"date-kebab",mailPreview:true,extractAttachments:false,logAuthor:""};
+ private settingsTab?:DropSettingsTab;
+ private native?: NativeBridge;
+ private nativeViews=new Map<string,MarkdownView>();
+ private nativeIds=new WeakMap<MarkdownView,string>();
+ private nativeCounter=0;
+ private nativeEvents:NativeEvent[]=[];
+ private receivingNotices=new Map<string,Notice>();
+
+ async onload(): Promise<void> {
+  const saved=await this.loadData();
+  this.settings=Object.assign({linkExtensions:"pdf",dropMode:saved?"custom":"images-only",nameMode:saved?"original":"date-kebab",mailPreview:true,extractAttachments:false,logAuthor:""},saved);
+  if(!["images-only","custom","obsidian"].includes(this.settings.dropMode))this.settings.dropMode=saved?"custom":"images-only";
+  if(typeof this.settings.linkExtensions!=="string")this.settings.linkExtensions="pdf";
+  if(!["date-kebab","kebab","original"].includes(this.settings.nameMode))this.settings.nameMode="original";
+  if(typeof this.settings.mailPreview!=="boolean")this.settings.mailPreview=true;
+  if(typeof this.settings.extractAttachments!=="boolean")this.settings.extractAttachments=false;
+  if(typeof this.settings.logAuthor!=="string")this.settings.logAuthor="";
+  if(!saved)await this.saveData(this.settings);
+  this.settingsTab=new DropSettingsTab(this);
+  this.addSettingTab(this.settingsTab);
+  // Capture before the editor's native attachment handler: one import, one block.
+  // Scope listeners to all Obsidian windows, including detached Markdown panes.
+  const documents=new WeakSet<Document>();
+  const register=(doc:Document)=>{
+   if(documents.has(doc)) return;
+   documents.add(doc);
+   this.registerDomEvent(doc,"dragover",event=>{
+    if(Array.from(event.dataTransfer?.types??[]).includes("Files")) event.preventDefault();
+   },true);
+   this.registerDomEvent(doc,"drop",event=>this.handleDrop(event),true);
+  };
+  register(document);
+  this.app.workspace.iterateAllLeaves(leaf=>register(leaf.view.containerEl.ownerDocument));
+  this.registerEvent(this.app.workspace.on("window-open",(_workspace,win)=>register(win.document)));
+  if(process.platform==="darwin"&&this.app.vault.adapter instanceof FileSystemAdapter) {
+   let failed=false;
+   this.native=new NativeBridge(helperPath(this.app.vault.adapter.getBasePath(),this.manifest.dir??`${this.app.vault.configDir}/plugins/${this.manifest.id}`),
+    event=>this.handleNativeEvent(event),error=>{
+     console.error("Outlook native receiver:",error);
+     if(!failed){failed=true;new Notice(`Mail drag could not start: ${error.message}. Reload the plugin.`,10000);}
+    });
+   this.register(()=>this.native?.stop());
+   this.register(()=>{for(const notice of this.receivingNotices.values())notice.hide();this.receivingNotices.clear();});
+   const refresh=()=>this.refreshNativeTargets();
+   this.registerInterval(window.setInterval(refresh,250));
+   this.registerEvent(this.app.workspace.on("layout-change",refresh));
+   refresh();
+  }
+ }
+
+ private handleDrop(event:DragEvent):void {
+  if(event.defaultPrevented) return;
+  // Read native file objects synchronously: DataTransfer is protected after drop.
+  const files=droppedMails(event.dataTransfer);
+  if(!files.length) {this.handleDocumentDrop(event);return;}
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const element=event.target as Node|null;
+  let target:MarkdownView|undefined;
+  this.app.workspace.iterateAllLeaves(leaf=>{
+   if(leaf.view instanceof MarkdownView && element && leaf.view.containerEl.contains(element)) target=leaf.view;
+  });
+  if(!target?.file) {new Notice("Drop the email onto an open note.");return;}
+  const view=target, note=target.file, when=new Date();
+  this.pending=this.pending.then(async()=>{await this.importFiles(files,note,view,when);}).catch(error=>{
+   console.error("Outlook Drop Importer:",error);
+   new Notice(String(error instanceof Error?error.message:error),10000);
+  });
+ }
+
+ private handleDocumentDrop(event:DragEvent):void {
+  if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
+  const extensions=linkedExtensions(this.settings.linkExtensions),mode=this.settings.dropMode;
+  if(mode==="obsidian"||(mode==="custom"&&!extensions.size))return;
+  const external=Array.from(event.dataTransfer?.files??[]);
+  let internal:TFile[]=[];
+  // Obsidian's own drag descriptors are stable in the installed host. Require its URI as well,
+  // so stale descriptors can never turn an unrelated text/browser drop into a file drop.
+  if(!external.length&&event.dataTransfer?.getData("text/plain").includes("obsidian://")) {
+   const manager=(this.app as unknown as {dragManager:{draggable?:{type:string;file?:TFile;files?:unknown[]}}}).dragManager;
+   const drag=manager.draggable;
+   if(drag?.type==="file"&&drag.file instanceof TFile)internal=[drag.file];
+   else if(drag?.type==="files"&&drag.files?.every(file=>file instanceof TFile))internal=drag.files as TFile[];
+  }
+  if(!(external.length&&this.settings.nameMode!=="original")&&![...external,...internal].some(file=>wantsPlainLink(file.name,extensions,mode)))return;
+  let view:MarkdownView|undefined;
+  this.app.workspace.iterateAllLeaves(leaf=>{
+   if(leaf.view instanceof MarkdownView&&event.target&&leaf.view.containerEl.contains(event.target as Node))view=leaf.view;
+  });
+  if(!view?.file)return;
+  const target=view,note=view.file,editor=view.editor;
+  const when=new Date();
+  const snapshot={text:editor.getValue(),from:editor.getCursor("from"),to:editor.getCursor("to")};
+  event.preventDefault();event.stopImmediatePropagation();
+  this.pending=this.pending.then(async()=>{
+   const files=[...internal];
+   for(const input of external) {
+    const bytes=await input.arrayBuffer();
+    const desired=attachmentFilename(input.name,this.settings.nameMode,when);
+    const proposed=await this.app.fileManager.getAvailablePathForAttachment(desired,note.path);
+    const folder=proposed.includes("/")?proposed.slice(0,proposed.lastIndexOf("/")):"";
+    const reused=await this.findSame(folder,input.name,bytes);
+    if(reused){files.push(this.app.vault.getAbstractFileByPath(reused) as TFile);continue;}
+    let created:TFile|undefined;
+    for(let n=1;n<=10000;n++) {
+     const name=n===1?desired:numberedFilename(desired,n);
+     const path=folder?folder+"/"+name:name;
+     if(this.app.vault.getAbstractFileByPath(path))continue;
+     try{created=await this.app.vault.createBinary(path,bytes);break;}
+     catch(error){if(this.app.vault.getAbstractFileByPath(path))continue;throw error;}
+    }
+    if(!created)throw Error("No available filename found.");
+    files.push(created);
+   }
+   const links=files.map(file=>droppedFileLink(file.name,this.app.metadataCache.fileToLinktext(file,note.path,true),extensions,mode)).join("\n");
+   if(target.file===note&&target.getMode()==="source"&&editor.getValue()===snapshot.text) {
+    editor.replaceRange(links,snapshot.from,snapshot.to,"input");await target.save();
+   } else {
+    // If the user edited or changed panes during I/O, append instead of overwriting a stale selection.
+    if(target.file===note)await target.save();
+    await this.app.vault.process(note,current=>current+(current.endsWith("\n")?"\n":"\n\n")+links+"\n");
+   }
+  }).catch(error=>{console.error("Attachment drop:",error);new Notice(`Could not add the file link: ${String(error)}. Saved files remain in the attachment folder.`,10000);});
+ }
+
+ private refreshNativeTargets():void {
+  const targets:NativeTarget[]=[];
+  this.nativeViews.clear();
+  this.app.workspace.iterateAllLeaves(leaf=>{
+   if(!(leaf.view instanceof MarkdownView)||!leaf.view.file)return;
+   const view=leaf.view,win=view.containerEl.ownerDocument.defaultView;
+   const rect=view.contentEl.getBoundingClientRect();
+   if(!win||rect.width<30||rect.height<30)return;
+   let id=this.nativeIds.get(view);
+   if(!id){id=`note-${++this.nativeCounter}`;this.nativeIds.set(view,id);}
+   this.nativeViews.set(id,view);
+   targets.push({id,path:view.file!.path,x:win.screenX+rect.left,y:win.screenY+rect.top,width:rect.width,height:rect.height});
+  });
+  this.native?.updateTargets(targets);
+ }
+
+ private handleNativeEvent(event:NativeEvent):void {
+  this.nativeEvents.push(event);
+  if(this.nativeEvents.length>15)this.nativeEvents.shift();
+  const receipt=event.directory??event.target??"";
+  if(event.event==="receiving"){
+   this.receivingNotices.get(receipt)?.hide();
+   this.receivingNotices.set(receipt,new Notice("Receiving email…",8000));return;
+  }
+  if(event.event==="drop"||event.event==="error"){
+   this.receivingNotices.get(receipt)?.hide();this.receivingNotices.delete(receipt);
+  }
+  if(event.event==="error"){new Notice(event.message??"The mail app did not provide the email. Try dragging it again.",10000);return;}
+  if(event.event!=="drop")return;
+  const when=event.when?new Date(event.when):new Date();
+  const view=this.nativeViews.get(event.target??"");
+  this.pending=this.pending.then(async()=>{
+   const note=this.app.vault.getAbstractFileByPath(event.path??"");
+   if(!(note instanceof TFile)||note.extension!=="md")throw Error("The target note no longer exists. Drop the email onto an open note.");
+   const files=await nativeMailFiles(event);
+   const saved=await this.importFiles(files,note,view,when);
+   if(event.errors?.length)new Notice(event.errors.join(" "),10000);
+   // Keep received originals recoverable whenever any import step fails.
+   if(saved&&!event.errors?.length&&event.directory)await rm(event.directory,{recursive:true,force:true});
+  }).catch(error=>{
+   console.error("Outlook native import:",error);
+   new Notice(error instanceof Error?error.message:String(error),10000);
+  });
+ }
+
+ private async findSame(folder:string,original:string,bytes:ArrayBuffer):Promise<string|undefined> {
+  const parent=folder?this.app.vault.getAbstractFileByPath(folder):this.app.vault.getRoot();
+  if(!(parent instanceof TFolder))return;
+  for(const file of parent.children) {
+   if(!(file instanceof TFile)||file.stat.size!==bytes.byteLength||!sameImportName(original,file.name))continue;
+   try{if(sameBytes(await this.app.vault.readBinary(file),bytes))return file.path;}catch{/* Keep unreadable originals untouched. */}
+  }
+  return undefined;
+ }
+
+ private async importFiles(files:MailFile[],note:TFile,view:MarkdownView|undefined,when:Date):Promise<boolean> {
+  // Bind to the drop's file, even if the user changes panes during async reads.
+  if(this.app.vault.getAbstractFileByPath(note.path)!==note) throw Error("The target note was moved or deleted. Drop the email onto the note again.");
+  if(view?.file===note) await view.save();
+  const folder=note.parent?.path==="/"?"":note.parent?.path??"";
+  const result=await importAttachments(files,folder,{
+   findSame:(original,bytes)=>this.findSame(folder,original,bytes),
+   exists:path=>!!this.app.vault.getAbstractFileByPath(path),
+   read:async path=>{
+    const file=this.app.vault.getAbstractFileByPath(path);
+    if(!(file instanceof TFile)) throw Error("File not found");
+    return this.app.vault.readBinary(file);
+   },
+   create:async(path,bytes)=>{await this.app.vault.createBinary(path,bytes);},
+   append:async update=>{await this.app.vault.process(note,update);},
+   link:path=>{
+    const file=this.app.vault.getAbstractFileByPath(path);
+    if(!(file instanceof TFile)) throw Error("Email file not found");
+    return `[[${this.app.metadataCache.fileToLinktext(file,note.path,false)}]]`;
+   }
+  },when,{nameMode:this.settings.nameMode,preview:this.settings.mailPreview,extract:this.settings.extractAttachments,author:this.settings.logAuthor});
+  if(result.previewFailures.length)new Notice("Email saved, but its text could not be read. Open the original file.",10000);
+  if(result.extractionFailures.length) {
+   console.error("Email attachments:",result.extractionFailures);
+   new Notice(`Email saved; ${result.extractionFailures.length} attachment(s) could not be saved separately. Drag the email again to retry.`,10000);
+  }
+  if(result.failures.length) {
+   console.error("Outlook Drop Importer: niet opgeslagen",result.failures);
+   new Notice(`${result.added} added; ${result.failures.length} failed: ${result.failures.map(f=>f.name).join(", ")}. Drag these emails again.`,10000);
+  } else if(!result.extractionFailures.length&&!result.previewFailures.length)new Notice(result.added?`${result.added===1?"Email added":`${result.added} emails added`}`:result.enriched?"Email content added.":"This email is already linked to this note.");
+  return result.failures.length===0&&result.extractionFailures.length===0;
+ }
+}
+
+class DropSettingsTab extends PluginSettingTab {
+ constructor(private plugin:OutlookDropImporter){super(plugin.app,plugin);}
+ display():void {
+  this.containerEl.empty();
+  new Setting(this.containerEl)
+   .setName("Attachment drops")
+   .addDropdown(dropdown=>dropdown
+    .addOption("images-only","Embed images only")
+    .addOption("custom","Choose by file type")
+    .addOption("obsidian","Obsidian default")
+    .setValue(this.plugin.settings.dropMode)
+    .onChange(async value=>{this.plugin.settings.dropMode=value as DropMode;await this.plugin.saveData(this.plugin.settings);this.display();}));
+  new Setting(this.containerEl)
+   .setName("File names")
+   .setDesc("For new attachments. Adds today’s date if the name has no full date.")
+   .addDropdown(dropdown=>dropdown.addOption("date-kebab","Date + kebab-case").addOption("kebab","Kebab-case only").addOption("original","Original name")
+    .setValue(this.plugin.settings.nameMode).onChange(async value=>{this.plugin.settings.nameMode=value as NameMode;await this.plugin.saveData(this.plugin.settings);}));
+  new Setting(this.containerEl).setName("Email preview").setDesc("Show email text below its link, collapsed by default.")
+   .addToggle(toggle=>toggle.setValue(this.plugin.settings.mailPreview).onChange(async value=>{this.plugin.settings.mailPreview=value;await this.plugin.saveData(this.plugin.settings);}));
+  new Setting(this.containerEl).setName("Extract email attachments").setDesc("Save beside the email and link in the note. Inline images stay in the email.")
+   .addToggle(toggle=>toggle.setValue(this.plugin.settings.extractAttachments).onChange(async value=>{this.plugin.settings.extractAttachments=value;await this.plugin.saveData(this.plugin.settings);}));
+  new Setting(this.containerEl).setName("Added by").setDesc("Optional name shown in new email entries.")
+   .addText(text=>text.setValue(this.plugin.settings.logAuthor).onChange(async value=>{this.plugin.settings.logAuthor=value;await this.plugin.saveData(this.plugin.settings);}));
+  if(this.plugin.settings.dropMode==="custom")new Setting(this.containerEl)
+   .setName("File types to link")
+   .setDesc("Comma-separated file extensions.")
+   .addText(text=>text.setPlaceholder("pdf, png, jpg").setValue(this.plugin.settings.linkExtensions).onChange(async value=>{
+    this.plugin.settings.linkExtensions=value;await this.plugin.saveData(this.plugin.settings);
+   }));
+ }
+}

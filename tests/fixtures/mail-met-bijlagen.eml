@@ -1,0 +1,44 @@
+From: Viggo <viggo@example.invalid>
+To: Tester <test@example.invalid>
+Subject: Example Project - Team Event
+Date: Fri, 23 Oct 2026 11:28:46 +0200
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="test-mail"
+
+--test-mail
+Content-Type: text/plain; charset=utf-8
+
+Hoi team,
+
+Hierbij de offerte en het budget.
+
+--test-mail
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="Offerte Mailverbetering.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKJSBleGFjdCB0ZXN0CiUlRU9GCg==
+
+--test-mail
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+Content-Disposition: attachment; filename="Budget Mailverbetering.xlsx"
+Content-Transfer-Encoding: base64
+
+UEsDBADI/w==
+
+--test-mail
+Content-Type: image/png
+Content-Disposition: inline; filename="Logo Mailverbetering.png"
+Content-Transfer-Encoding: base64
+Content-ID: <logo>
+
+iVBORw==
+
+--test-mail
+Content-Type: text/plain
+Content-Disposition: attachment; filename="Leeg Mailverbetering.txt"
+Content-Transfer-Encoding: base64
+
+
+
+--test-mail--

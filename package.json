@@ -1,0 +1,29 @@
+{
+  "name": "obsidian-outlook-drop",
+  "version": "0.9.0",
+  "private": true,
+  "description": "Import Apple Mail and Outlook .eml drops into an Obsidian vault.",
+  "scripts": {
+    "test": "vitest run",
+    "build": "node scripts/build.mjs",
+    "package": "python3 scripts/package-release.py"
+  },
+  "devDependencies": {
+    "@types/html-to-text": "^9.0.4",
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.28.2",
+    "html-to-text": "^10.0.1",
+    "obsidian": "^1.14.4",
+    "postal-mime": "^2.4.4",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.12"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/viggomeesters/obsidian-mail-drop.git"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

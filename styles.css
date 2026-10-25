@@ -1,0 +1,13 @@
+.outlook-drop-importer-zone {
+	position: fixed; inset: 12vh 18vw; z-index: 1000; display: flex; flex-direction: column;
+	align-items: center; justify-content: center; border: 2px dashed var(--interactive-accent);
+	border-radius: 18px; background: var(--background-primary); box-shadow: 0 12px 48px #0005;
+}
+.outlook-drop-importer-zone.is-dragging { background: var(--background-secondary); border-style: solid; transform: scale(1.01); }
+
+/* Keep generated mail blocks within narrow panes, including long subjects/URLs. */
+.callout[data-callout-metadata="outlook-mail"] { overflow-wrap: anywhere; }
+.callout[data-callout-metadata="outlook-mail"] .callout-title-inner {
+ min-width: 0;
+ overflow-wrap: anywhere;
+}
