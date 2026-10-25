@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "typeRoots": ["node_modules/@types", "node_modules/obsidian"],
+    "typeRoots": [
+      "node_modules/@types",
+      "node_modules/obsidian"
+    ],
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "ESNext",
@@ -17,7 +20,18 @@
     "importHelpers": false,
     "downlevelIteration": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts"
+  ]
 }

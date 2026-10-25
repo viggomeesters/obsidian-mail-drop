@@ -8,7 +8,8 @@
     "build": "node scripts/build.mjs",
     "package": "python3 scripts/package-release.py",
     "lint": "eslint src --max-warnings 0",
-    "verify": "npm run lint && npm test && npm run build && node scripts/review-checks.mjs"
+    "verify": "npm run lint && npm test && npm run build && npm run build:native && node scripts/review-checks.mjs",
+    "build:native": "node scripts/build-native.mjs"
   },
   "devDependencies": {
     "@eslint/json": "^0.14.0",

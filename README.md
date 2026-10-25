@@ -67,13 +67,14 @@ The receiver writes outside the vault only to its own private `obsidian-outlook-
 
 ## Build and verify
 
-Requires Node.js 22.12+, Python 3, macOS, and Xcode Command Line Tools.
+The plugin build requires Node.js 22.12+ and Python 3. Building the optional receiver also requires macOS and Xcode Command Line Tools.
 
 ```sh
 npm ci
 npm run lint
 npm test
 npm run build
+npm run build:native
 outputs/obsidian-outlook-drop/outlook-file-promises --self-test
 outputs/obsidian-outlook-drop/outlook-file-promises --pasteboard-self-test
 outputs/obsidian-outlook-drop/outlook-file-promises --materialization-self-test
@@ -81,7 +82,7 @@ outputs/obsidian-outlook-drop/outlook-file-promises --materialization-flow-self-
 npm run package
 ```
 
-The build compiles an ad-hoc-signed universal arm64/x86_64 receiver. Release files and SHA-256 checksums are written to `outputs/release/<version>/`. Builds and releases run locally; no GitHub Actions workflow is used.
+`npm run build` produces the standard `main.js` without compiling a receiver. `npm run build:native` compiles the ad-hoc-signed universal arm64/x86_64 receiver. Release files and SHA-256 checksums are written to `outputs/release/<version>/`. Builds and releases run locally; no GitHub Actions workflow is used.
 
 Synthetic tests cover MIME parsing, attachment extraction, naming, byte preservation, deduplication, path validation, process lifecycle, and Apple Mail completion without its legacy callback. They do not replace testing real drags on each mail app and architecture.
 

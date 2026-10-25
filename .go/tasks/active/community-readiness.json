@@ -17,7 +17,8 @@
       "README.md",
       "manifest.json",
       "versions.json",
-      "package*.json"
+      "package*.json",
+      "tsconfig.json"
     ],
     "modify": [
       "src/**",
@@ -37,7 +38,8 @@
       ".gitignore",
       "AGENTS.md",
       ".go/**",
-      "go"
+      "go",
+      "tsconfig.json"
     ]
   },
   "acceptance": [
@@ -58,8 +60,8 @@
   "completion_evidence": {
     "schema": "go-workflow.completion-evidence.v1",
     "verification": {
-      "path": ".go/runs/community-readiness/completion/verification-6752f0860e614f9bb12065decf3c2ea4.json",
-      "sha256": "53b72021d51b233c43ba9c1041773ae41e13ff8cb4e06cce270d4603b1404d1d"
+      "path": ".go/runs/community-readiness/completion/verification-d2fba7d129d64338b9a7d477c0e455bb.json",
+      "sha256": "5e70f66356702d885c449939074c0f8b7326bf50189ddfb284291666a98f05a2"
     }
   }
 }

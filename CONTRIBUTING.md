@@ -4,7 +4,7 @@ Keep changes focused on local, explicit imports. Preserve original file bytes, h
 
 ## Verify
 
-Use Node.js 22.12+, Python 3, macOS and Xcode Command Line Tools.
+Use Node.js 22.12+ and Python 3 for the plugin build. The complete native verification also requires macOS and Xcode Command Line Tools.
 
 ```sh
 npm ci

@@ -6,3 +6,6 @@ outputs/
 tests/live-*.js
 # Local workflow command logs can contain machine-specific paths.
 .go/runs/
+
+# Generated standard Obsidian build artifact.
+/main.js
