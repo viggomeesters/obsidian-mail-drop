@@ -9,3 +9,7 @@ Version 0.9.2 fixes the clean Community builder environment: the standard plugin
 - The 56 tests, strict official lint, TypeScript and native checks pass. The isolated application evidence and screenshots are in [0.9.1 validation](validation-0.9.1.md).
 
 The official 0.9.1 source preview had completed without source findings; its later full release review exposed the missing Python dependency. Source preview and full release/build review must be recorded separately. Check the Community dashboard and GitHub Releases for current server review and publication state.
+
+The full official 0.9.2 release review completed on 25 October 2026: dependency check Pass and build verification Pass, reproducing release main.js byte-for-byte. There are no errors. Two declared behavior warnings (filesystem and child-process access) and two release recommendations remain. All 10 release assets were anonymously downloaded and matched their local checksums.
+
+The public listing is https://community.obsidian.md/plugins/outlook-drop-importer. Immediately after publication the installed Obsidian app's CLI did not yet find the new ID in its catalog; the public legacy catalog also lacked it. Obsidian documents up to 24 hours for newly approved projects to reach in-app search/download. This actual Community-installer acceptance check remains pending; manual three-file runtime evidence must not be represented as a successful catalog install.

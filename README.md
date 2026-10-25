@@ -9,16 +9,18 @@ Mail Drop also controls attachment links: embed images and link PDFs, spreadshee
 ## Compatibility
 
 - Obsidian desktop 1.5.7 or later.
-- Native email dragging requires macOS 13 or later and the included receiver.
+- Native email dragging requires macOS 13 or later and a separately installed receiver.
 - Apple Silicon has been tested with real Apple Mail and Outlook drops. The universal receiver also builds for Intel; real Intel execution has not yet been tested.
 - Mobile is unsupported. Other desktop platforms have not been validated for a public release.
 - This is an early release. Email apps may expose different drag formats across versions. Drag the message from the message list onto the text of an open Markdown note.
 
 ## Install
 
+Install **Mail Drop** from Obsidian’s Community plugins browser or open the [Community listing](https://community.obsidian.md/plugins/outlook-drop-importer). A newly published listing can take up to 24 hours to appear in the app.
+
 The Community-style installation consists of `main.js`, `manifest.json` and `styles.css`. Copy those assets into `<your-vault>/.obsidian/plugins/outlook-drop-importer/` and enable **Mail Drop**. A complete ZIP is also available from [Releases](https://github.com/viggomeesters/obsidian-mail-drop/releases). Keep your existing `data.json` when upgrading.
 
-The plugin is not yet listed in the Community directory. The legacy plugin ID is retained so existing settings continue to work.
+Existing installations retain their settings; the plugin ID remains `outlook-drop-importer`.
 
 **Direct dragging from Apple Mail or Outlook requires a separate macOS receiver.** New installations keep native dragging off. Ordinary EML file imports and document/image drops work without it. Follow the [receiver installation guide](docs/native-receiver.md) to install the executable yourself, enable **Native email dragging**, and connect its path. Mail Drop does not download or install dependencies. The receiver is ad-hoc signed, not Apple notarized.
 

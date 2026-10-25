@@ -7,7 +7,7 @@
   "project": "obsidian-mail-drop",
   "status": "active",
   "summary": "Repair plugin compatibility, standard installation, lint, documentation and review evidence",
-  "description": "Address the explicitly requested Mail Drop publication gaps against the central Obsidian checklist. Native reception remains an explicit externally installed dependency, with standard three-file installation functioning without it. Official preview is a separate authenticated external gate.",
+  "description": "Address the explicitly requested Mail Drop publication gaps against the central Obsidian checklist. Native reception remains an explicit externally installed dependency, with standard three-file installation functioning without it. Official preview is a separate authenticated external gate. Implementation, official source/release review and public 0.9.2 publication are verified. Final actual Community-installer acceptance is waiting on external app-catalog propagation (new ID absent immediately after publication; Obsidian documents up to 24 hours). Resume by checking the catalog and installing into the isolated test vault; do not repeat builds or publish another version unless a new code/build finding appears.",
   "scope": {
     "read": [
       "src/**",
@@ -56,12 +56,14 @@
   "work_status": "in_progress",
   "review_status": "none",
   "review_history": [],
-  "evidence": [],
+  "evidence": [
+    "docs/validation-0.9.2.md"
+  ],
   "completion_evidence": {
     "schema": "go-workflow.completion-evidence.v1",
     "verification": {
-      "path": ".go/runs/community-readiness/completion/verification-b4023583afdc4fa9b6f41fc49c0f5995.json",
-      "sha256": "91dc05981b67f69643161cdbf36b8290e66153ee81831b7a83b1a6ec8b64ca94"
+      "path": ".go/runs/community-readiness/completion/verification-73da1ab7762f41cda1b956eb44e759c3.json",
+      "sha256": "16cd6fce7e75ab5ad2661957e722232ba9b0a0d960f26000e1407d15cabe56be"
     },
     "critic": {
       "path": ".go/runs/community-readiness/completion/critic-3587379d029a4ee3b6e93eb054377288.json",
