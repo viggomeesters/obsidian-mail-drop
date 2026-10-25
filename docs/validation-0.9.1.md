@@ -1,6 +1,6 @@
 # 0.9.1 candidate validation
 
-Validated on 25 October 2026 on macOS / Apple Silicon with Obsidian 1.13.7. The official preview of commit `94024d7` completed without errors and passed dependency checks. It reported five advisory unsafe-type rule groups; most locations involve Node APIs or newer standard-library definitions that the scanner does not resolve as the local typed build does. No 0.9.1 release has been published.
+Validated on 25 October 2026 on macOS / Apple Silicon with Obsidian 1.13.7. The final authenticated Community preview of commit `63bb386` completed with no displayed errors or warnings; dependency checks passed. This evidence predates release publication. See GitHub Releases for the current published version.
 
 - Clean plain `npm ci`: passed, zero known vulnerabilities. The first Community preview of commit `eb456e8` found missing peer dependencies in the lockfile; it was regenerated with ordinary `npm install`, and the plain clean installation was rechecked.
 - Official recommended Obsidian ESLint configuration: zero errors and warnings.

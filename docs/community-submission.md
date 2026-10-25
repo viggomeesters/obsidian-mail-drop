@@ -19,6 +19,8 @@ The public 0.9.0 prerelease was not Community-ready. The 0.9.1 candidate repairs
 5. Push a candidate branch/commit for the authenticated Obsidian Community preview. Record the actual result. Local official lint is not the server scan.
 6. Fix required findings, then decide on release and submission. Do not replace the existing release's assets silently.
 
-## Current external gate
+## Recorded preview and remaining publication checks
 
-Official Community preview requires the maintainer's authenticated account with linked GitHub. No passing server result is recorded yet. The native-dependency distribution model must still be assessed by that review. A maintainer must not label this candidate “Community approved” without its actual result.
+The authenticated official preview of source commit `63bb386650c04d588edd8172487643034763dd40` completed on 25 October 2026, with no displayed errors or warnings and a passing dependency check. Earlier lockfile installation failures were repaired, and explicit library/type configuration resolved the subsequent source warnings. See `validation-0.9.1.md`.
+
+A draft Community entry is registered. A matching published GitHub release, its actual release review, and the final listing state must be checked separately. Automated preview completion is not human approval of the optional native dependency model or proof that the plugin is publicly installable.
