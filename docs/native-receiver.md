@@ -19,3 +19,11 @@ Requires macOS 13+. Apple Silicon has real provider tests; Intel has only been c
 Existing saved preferences preserve native reception. An empty receiver path reuses an already present `outlook-file-promises` in the plugin folder for compatibility. A missing receiver does not prevent file imports or install anything; settings explain how to connect one. Keep your existing `data.json` when updating.
 
 Disabling the native toggle stops the receiver. Unloading the plugin also stops it and closes progress notices. Receiver restarts replace the previous child rather than installing a system service.
+
+## Outlook legacy promises
+
+Some Outlook drags expose modern promise metadata together with the legacy `WMOutlookInternalFilePromisePboardType`. The receiver requests those files through `NSDraggingInfo.namesOfPromisedFilesDropped(atDestination:)` synchronously during the drop. This compatibility call is intentionally deprecated by Apple; modern Outlook-only and Apple Mail promises continue to use `NSFilePromiseReceiver`. A drop uses one transport, never both.
+
+Legacy files are imported only after all expected EML files exist, their file identity/size/modification time have stabilized, their handles are closed and their MIME envelopes are complete. Failed transfers keep their temporary files for recovery and explain how to use a saved EML. Replacing the receiver executable requires reconnecting it or reloading Mail Drop.
+
+Synthetic verification: `outlook-file-promises --legacy-promise-self-test`. An optional second argument supplies a local EML fixture; it is read only and never queries a mailbox. This test uses a simulated provider and does not establish real Outlook acceptance.

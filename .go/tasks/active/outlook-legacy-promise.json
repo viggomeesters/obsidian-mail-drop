@@ -1,0 +1,53 @@
+{
+  "schema": "go-workflow.repo-local.task.v1",
+  "kind": "task",
+  "execution_mode": "mechanical",
+  "shareable_delivery": "auto",
+  "id": "outlook-legacy-promise",
+  "project": "obsidian-mail-drop",
+  "status": "active",
+  "summary": "Receive Outlook legacy promised mail during the drop",
+  "description": "Issue #1: observed Outlook native promise starts but supplies zero bytes/callback. Implement synchronous legacy promise initiation from NSDraggingInfo with complete-file validation, preserve modern Apple Mail handling, regressions and local receiver installation. incident_logging_unavailable: installed Hermes has no errors interface.",
+  "scope": {
+    "read": [
+      "native",
+      "tests",
+      "docs"
+    ],
+    "modify": [
+      "native/outlook-file-promises.swift",
+      "docs/native-receiver.md",
+      "docs/validation-outlook-legacy.md",
+      "CHANGELOG.md",
+      "tests/native.test.ts",
+      "src/native.ts"
+    ]
+  },
+  "acceptance": [
+    "Legacy Outlook materialization starts within the drop and imports only complete stable closed EML files; modern providers remain supported; local installed receiver matches tested bytes; real provider validation remains explicit."
+  ],
+  "verification": [
+    "npm run verify",
+    "outputs/obsidian-outlook-drop/outlook-file-promises --legacy-promise-self-test"
+  ],
+  "claim": {
+    "agent": "codex",
+    "claimed_at": "2026-10-26T15:37:41+01:00",
+    "base_commit": "8a04fc2cd51435e20231caafc542db3a4b98304d"
+  },
+  "work_status": "in_progress",
+  "review_status": "none",
+  "review_history": [],
+  "evidence": [],
+  "completion_evidence": {
+    "schema": "go-workflow.completion-evidence.v1",
+    "verification": {
+      "path": ".go/runs/outlook-legacy-promise/completion/verification-860b7d4832cf4a6b99907a5b5a6e489f.json",
+      "sha256": "86a69f6cc0b1efa166ca066d63a4dc3cad4c36692fbaf2f87a9976fc40b4b786"
+    },
+    "critic": {
+      "path": ".go/runs/outlook-legacy-promise/completion/critic-7566c9cedb334e9c86eeb1620c366d06.json",
+      "sha256": "6930fdc3a5b84fc0a44e1aec5ecbbec3455c13c943c3c58882af1fad1a6d242f"
+    }
+  }
+}
