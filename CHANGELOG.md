@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Receive Outlook legacy file promises during the active drop instead of routing mixed legacy/modern metadata exclusively through the asynchronous receiver.
+- Validate completed legacy EML files and also detect modern Outlook files delivered without a completion callback.
+- Provide a saved-EML recovery action when a mail app does not deliver its promised files.
+
 ## 0.10.0 — 2026-10-25
 
 - Optional Attachment Link Rules cooperation for document syntax; retain date + kebab-case names and original bytes.

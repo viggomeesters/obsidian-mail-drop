@@ -46,6 +46,19 @@ func mailPromiseSource(_ types: [NSPasteboard.PasteboardType], contentTypes: [St
 func mailPromiseSource(_ board: NSPasteboard) -> String? {
  return mailPromiseSource(board.types ?? [], contentTypes: promiseContentTypes(board))
 }
+// Outlook can advertise modern metadata while actually requiring its legacy
+// promise handshake. That handshake needs NSDraggingInfo inside performDrop.
+func useLegacyOutlookPromise(_ types: [NSPasteboard.PasteboardType], source: String) -> Bool {
+ let names = Set(types.map { $0.rawValue })
+ return source == "outlook" && names.contains("WMOutlookInternalFilePromisePboardType") &&
+  names.contains("Apple files promise pasteboard type")
+}
+func validLegacyMailNames(_ names: [String]) -> Bool {
+ return !names.isEmpty && Set(names).count == names.count && names.allSatisfy {
+  !$0.isEmpty && !$0.contains("/") && !$0.contains("\\") && !$0.contains("\0") &&
+   ($0 as NSString).pathExtension.lowercased() == "eml"
+ }
+}
 // Apple Mail can write an EML without completing AppKit's legacy promise callback.
 // Only accept materialized files after their handles are closed, their identity/size/mtime
 // are stable, and their MIME envelope is complete. No arbitrary sleep means success.
@@ -138,7 +151,11 @@ final class PromiseView: NSView {
  override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
   guard let target = target, let coordinator = coordinator else { return false }
   coordinator.finishingDrag = true
-  let accepted = coordinator.receive(sender.draggingPasteboard, target: target)
+  // The legacy source must receive its destination while this drag session is
+  // still valid. Do not defer this call to the asynchronous promise queue.
+  let accepted = coordinator.receive(sender.draggingPasteboard, target: target, legacyDrop: {
+   sender.namesOfPromisedFilesDropped(atDestination: $0)
+  })
   if !accepted { coordinator.finishingDrag = false }
   return accepted
  }
@@ -187,7 +204,7 @@ final class Coordinator {
  func start() {
   timer = Timer(timeInterval: 0.08, repeats: true) { [weak self] _ in self?.poll() }
   RunLoop.main.add(timer!, forMode: .common)
-  emit(["event": "ready", "protocol": 1])
+  emit(["event": "ready", "protocol": 1, "capabilities": ["outlook-legacy-promise"]])
  }
  func obsidianIsVisible(at point: NSPoint) -> Bool {
   let top = NSScreen.screens.first?.frame.maxY ?? 0
@@ -230,8 +247,11 @@ final class Coordinator {
   panel.setFrame(target.cocoaFrame, display: true)
   if !panel.isVisible { panel.orderFrontRegardless(); emit(["event": "target", "target": target.id, "path": target.path]) }
  }
- func receive(_ board: NSPasteboard, target: Target) -> Bool {
-  guard let source = mailPromiseSource(board), let promises = board.readObjects(forClasses: [NSFilePromiseReceiver.self], options: nil) as? [NSFilePromiseReceiver], !promises.isEmpty else {
+ func receive(_ board: NSPasteboard, target: Target, legacyDrop: ((URL) -> [String]?)? = nil) -> Bool {
+  guard let source = mailPromiseSource(board) else { return false }
+  let legacy = useLegacyOutlookPromise(board.types ?? [], source: source) && legacyDrop != nil
+  let promises = legacy ? [] : (board.readObjects(forClasses: [NSFilePromiseReceiver.self], options: nil) as? [NSFilePromiseReceiver] ?? [])
+  guard legacy || !promises.isEmpty else {
    emit(["event": "error", "message": "The mail app did not provide a receivable email. Try dragging it again."])
    return false
   }
@@ -239,6 +259,9 @@ final class Coordinator {
   let destination = FileManager.default.temporaryDirectory.appendingPathComponent("obsidian-outlook-" + id.uuidString, isDirectory: true)
   do { try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true) }
   catch { emit(["event": "error", "message": "Could not create temporary email storage: \(error.localizedDescription)"]); return false }
+  if legacy, let request = legacyDrop {
+   return receiveLegacy(target: target, destination: destination, id: id, request: request)
+  }
   let expected = promises.reduce(0) { $0 + max($1.fileNames.count, $1.fileTypes.count, 1) }
   pendingDrops[id] = (expected, [], [])
   dropSources[id] = source
@@ -277,19 +300,39 @@ final class Coordinator {
    }
    }
   }
-  if source == "apple-mail", pendingDrops[id] != nil {
+  if pendingDrops[id] != nil {
    watchMaterialized(id, target: target, when: when, destination: destination, expected: expected)
   }
-  DispatchQueue.main.asyncAfter(deadline: .now() + 45) { [weak self] in
-   guard let self = self, var state = self.pendingDrops[id] else { return }
-   state.errors.append("The mail app did not provide all emails. Drag the missing email again.")
-   self.pendingDrops[id] = state
-   self.finish(id, target: target, when: when, destination: destination)
-  }
+  scheduleDeadline(id, target: target, when: when, destination: destination)
   return true
  }
+ func receiveLegacy(target: Target, destination: URL, id: UUID, request: (URL) -> [String]?) -> Bool {
+  let when = ISO8601DateFormatter().string(from: Date())
+  activeChange = nil
+  dropSources[id] = "outlook"
+  // NSDraggingInfo is consumed synchronously; only file readiness is asynchronous.
+  let names = request(destination) ?? []
+  guard validLegacyMailNames(names) else {
+   pendingDrops[id] = (0, [], ["Outlook did not provide valid email files. Save the email as .eml and drop that file onto the note."])
+   finish(id, target: target, when: when, destination: destination, completion: "legacy-promise-rejected")
+   return true
+  }
+  pendingDrops[id] = (names.count, [], [])
+  emit(["event": "receiving", "target": target.id, "path": target.path, "source": "outlook", "directory": destination.path, "expectedFiles": names.count, "transport": "legacy-dragging-info"])
+  watchMaterialized(id, target: target, when: when, destination: destination, expected: names.count)
+  scheduleDeadline(id, target: target, when: when, destination: destination)
+  return true
+ }
+ func scheduleDeadline(_ id: UUID, target: Target, when: String, destination: URL) {
+  DispatchQueue.main.asyncAfter(deadline: .now() + 45) { [weak self] in
+   guard let self = self, var state = self.pendingDrops[id] else { return }
+   state.errors.append("The mail app did not finish delivering the email. Save it as .eml and drop that file onto the note.")
+   self.pendingDrops[id] = state
+   self.finish(id, target: target, when: when, destination: destination, completion: "timeout")
+  }
+ }
  func watchMaterialized(_ id: UUID, target: Target, when: String, destination: URL, expected: Int) {
-   let source = "apple-mail"
+   let source = dropSources[id] ?? "unknown"
    let check = MaterializedMailCheck()
    let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
     guard let self = self, var state = self.pendingDrops[id],
@@ -336,9 +379,28 @@ if CommandLine.arguments.contains("--self-test") {
   ("internal-emlx", [transfer, modern], ["com.apple.mail.emlx"], nil),
   ("mixed-mail-image", [transfer, modern], ["eml", "public.jpeg"], nil)
  ]
- let results = cases.map { name, types, content, expected in
+ var results = cases.map { name, types, content, expected in
   return ["name": name, "passed": mailPromiseSource(types.map { .init($0) }, contentTypes: content) == expected] as [String: Any]
  }
+ let legacyRoutes: [(String, [String], String, Bool)] = [
+  ("outlook-observed-mixed-promise", [modern, legacy, "WMOutlookInternalFilePromisePboardType"], "outlook", true),
+  ("outlook-modern-only", [modern], "outlook", false),
+  ("apple-retains-modern-route", [modern, legacy], "apple-mail", false),
+  ("outlook-legacy-without-internal-marker", [legacy], "outlook", false)
+ ]
+ results += legacyRoutes.map { name, types, source, expected in
+  ["name": name, "passed": useLegacyOutlookPromise(types.map { .init($0) }, source: source) == expected] as [String: Any]
+ }
+ let nameCases: [(String, [String], Bool)] = [
+  ("legacy-names", ["One.eml", "Two.EML"], true),
+  ("legacy-empty", [], false),
+  ("legacy-traversal", ["../mail.eml"], false),
+  ("legacy-absolute", ["/mail.eml"], false),
+  ("legacy-windows-separator", ["folder\\mail.eml"], false),
+  ("legacy-nonmail", ["mail.msg"], false),
+  ("legacy-duplicates", ["mail.eml", "mail.eml"], false)
+ ]
+ results += nameCases.map { name, names, expected in ["name": name, "passed": validLegacyMailNames(names) == expected] as [String: Any] }
  let passed = results.allSatisfy { $0["passed"] as? Bool == true }
  emit(["event": "self-test", "passed": passed, "cases": results])
  exit(passed ? 0 : 1)
@@ -404,6 +466,73 @@ if CommandLine.arguments.contains("--materialization-self-test") {
  record("symlink-rejected", check.ready(in: folder, expected: 1, now: now.addingTimeInterval(9), isClosed: { _ in closed }) == nil)
  let passed = checks.allSatisfy { $0["passed"] as? Bool == true }
  emit(["passed": passed, "cases": checks]);exit(passed ? 0 : 1)
+}
+// Exercise the Outlook handshake without controlling the user's mouse or mailbox.
+if CommandLine.arguments.contains("--legacy-promise-self-test") {
+ let app = NSApplication.shared
+ app.setActivationPolicy(.accessory)
+ let coordinator = Coordinator()
+ let board = NSPasteboard.withUniqueName()
+ defer { board.releaseGlobally() }
+ board.declareTypes([.init("com.microsoft.kOlxMessagePasteboardType"), .init("WMOutlookInternalFilePromisePboardType"), .init("Apple files promise pasteboard type"), .init("com.apple.NSFilePromiseItemMetaData")], owner: nil)
+ board.setPropertyList(["eml"], forType: .init("Apple files promise pasteboard type"))
+ let target = Target(id: "legacy-test", path: "synthetic-legacy-mail.md", x: 0, y: 0, width: 100, height: 100)
+ var rejectionsPassed = true
+ for names: [String]? in [nil, [], ["../escape.eml"], ["mail.msg"], ["mail.eml", "mail.eml"]] {
+  var rejected = false
+  coordinator.onDrop = { payload in
+   rejected = (payload["completion"] as? String) == "legacy-promise-rejected" &&
+    (payload["files"] as? [String])?.isEmpty == true && (payload["errors"] as? [String])?.count == 1
+   if let directory = payload["directory"] as? String { try? FileManager.default.removeItem(atPath: directory) }
+  }
+  let accepted = coordinator.receive(board, target: target, legacyDrop: { _ in names })
+  rejectionsPassed = rejectionsPassed && accepted && rejected && coordinator.materializationTimers.isEmpty && coordinator.pendingDrops.isEmpty
+ }
+ guard rejectionsPassed else { emit(["passed": false, "reason": "Invalid legacy promise accepted"]); exit(1) }
+ var requestReturned = false
+ var requestedSynchronously = false
+ var dropCount = 0
+ var destination: URL?
+ let raw: Data
+ if CommandLine.arguments.count == 3 {
+  raw = try! Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[2]))
+ } else {
+  raw = Data("From: fixture@example.invalid\r\nSubject: Legacy Outlook\r\n\r\nComplete body.\r\n".utf8)
+ }
+ coordinator.onDrop = { payload in
+  dropCount += 1
+  let files = payload["files"] as? [String] ?? []
+  let passed = requestedSynchronously && requestReturned && dropCount == 1 && files.count == 1 &&
+   (try? Data(contentsOf: URL(fileURLWithPath: files[0]))) == raw &&
+   (payload["errors"] as? [String])?.isEmpty == true && payload["source"] as? String == "outlook" &&
+   payload["completion"] as? String == "materialized-files" && coordinator.materializationTimers.isEmpty &&
+   coordinator.retainedPromises.isEmpty && coordinator.pendingDrops.isEmpty
+  emit(["event": "legacy-promise-flow-result", "passed": passed, "syntheticProvider": true, "synchronousRequest": requestedSynchronously, "exactBytes": files.count == 1 && (try? Data(contentsOf: URL(fileURLWithPath: files[0]))) == raw])
+  if let destination = destination { try? FileManager.default.removeItem(at: destination) }
+  exit(passed ? 0 : 1)
+ }
+ let accepted = coordinator.receive(board, target: target, legacyDrop: { folder in
+  requestedSynchronously = !requestReturned
+  destination = folder
+  // Provider writes a partial, open file first, then closes the completed EML.
+  let file = folder.appendingPathComponent("legacy.eml")
+  try! Data(raw.prefix(raw.count / 2)).write(to: file)
+  let writer = try! FileHandle(forWritingTo: file)
+  try! writer.seekToEnd()
+  DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+   try! writer.write(contentsOf: raw.suffix(raw.count - raw.count / 2))
+   try! writer.close()
+  }
+  return ["legacy.eml"]
+ })
+ requestReturned = true
+ guard accepted && requestedSynchronously else { emit(["passed": false, "reason": "Legacy request not made during the drop"]); exit(1) }
+ DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+  emit(["passed": false, "reason": "Legacy email not received"])
+  if let destination = destination { try? FileManager.default.removeItem(at: destination) }
+  exit(1)
+ }
+ app.run()
 }
 if CommandLine.arguments.contains("--materialization-flow-self-test") || CommandLine.arguments.contains("--recover-materialized") {
  let app = NSApplication.shared
