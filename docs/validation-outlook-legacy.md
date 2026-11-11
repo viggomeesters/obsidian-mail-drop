@@ -15,10 +15,14 @@ Apple documents the legacy method at https://developer.apple.com/documentation/a
 - `outlook-file-promises --legacy-promise-self-test`: actual coordinator path requests synchronously, bypasses modern promise objects, rejects nil/empty/traversing/non-EML/duplicate names, waits for a partial open file to finish, receives exact bytes once and removes pending timers/state.
 - The same legacy test passes with the privately supplied original EML. Private input and outputs remain outside the public repository.
 - Universal executable contains arm64 and x86_64 slices; ad-hoc signature passes strict verification. Intel runtime is not tested.
-- Same-agent code review checks protocol exclusivity, synchronous session lifetime, no reading outside the receive folder, partial-file readiness, retry cleanup and retained modern behavior. This is not an independent review.
+- Independent source review on 11 November 2026 approved the merged fix at `4dec8ad`. It checked protocol exclusivity, synchronous session lifetime, no reading outside the receive folder, partial-file readiness, retry cleanup and retained modern behavior. No blocker was found.
 
 ## Acceptance boundary
 
-Synthetic provider tests cannot establish that Outlook honors the legacy request for the reported message. A new real Outlook drag using the locally installed candidate is required. Keep Issue #1 and the implementation task open until that readback; do not label this candidate a verified production fix or publish a stable release on synthetic evidence alone.
+On 11 November 2026, Viggo dragged a real Outlook message into an open Markdown note in Obsidian 1.15.0 on Apple Silicon using the installed candidate. The note received the mail heading, EML link and collapsed preview. The stored EML was 7,406 bytes, recognized as RFC 822 mail and contained a closing MIME boundary. The installed standard bundle matched the tested bundle; the active receiver matched the previously tested universal binary (SHA-256 `5a36c64960ec916a97ccf7b4bbbd80262bb39b8b4b931a2b4634afe84431ef44`). Private message contents and screenshots remain outside this public repository.
+
+This is real-provider acceptance for that message, alongside synthetic coverage of the legacy handshake. It does not establish that the original reported message, every Outlook variant or Intel runtime has been retested. No independent byte comparison against an export of the new message was performed. Intel is compile-only coverage.
+
+Release 0.10.1 packages this fix. Users of native dragging must replace the separate receiver and reconnect or reload it; the standard plugin update does not update that executable. Ordinary file imports need only the standard plugin assets. Retain the saved-EML fallback for a provider that still fails to deliver files.
 
 Only the receiver needs replacement. Plugin settings, user notes and the standard JavaScript bundle remain unchanged. Error copy identifies the failed transfer and the saved-EML action. It flows through the existing Notice presenter; no new layout or UI surface is introduced.

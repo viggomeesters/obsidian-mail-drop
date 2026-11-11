@@ -20,11 +20,17 @@
       "docs/validation-outlook-legacy.md",
       "CHANGELOG.md",
       "tests/native.test.ts",
-      "src/native.ts"
+      "src/native.ts",
+      "manifest.json",
+      "package.json",
+      "package-lock.json",
+      "versions.json",
+      "README.md"
     ]
   },
   "acceptance": [
-    "Legacy Outlook materialization starts within the drop and imports only complete stable closed EML files; modern providers remain supported; local installed receiver matches tested bytes; real provider validation remains explicit."
+    "Legacy Outlook materialization starts within the drop and imports only complete stable closed EML files; modern providers remain supported; local installed receiver matches tested bytes; real provider validation remains explicit.",
+    "Viggo authorized public release 0.10.1 on 2026-11-11 after a successful real Outlook drag. Publish verified standard and separate receiver assets, explain the receiver upgrade, update Issue #1 and the existing vault owner. Release maintenance changes only metadata and documentation; no new code or dependencies."
   ],
   "verification": [
     "npm run verify",
@@ -42,12 +48,12 @@
   "completion_evidence": {
     "schema": "go-workflow.completion-evidence.v1",
     "verification": {
-      "path": ".go/runs/outlook-legacy-promise/completion/verification-860b7d4832cf4a6b99907a5b5a6e489f.json",
-      "sha256": "86a69f6cc0b1efa166ca066d63a4dc3cad4c36692fbaf2f87a9976fc40b4b786"
+      "path": ".go/runs/outlook-legacy-promise/completion/verification-5688e336ca53454b9045b3fbafe7f631.json",
+      "sha256": "8f5b2600188193937427aff44e474a9df124515a8ef3c7220d3096b90134bdbf"
     },
     "critic": {
-      "path": ".go/runs/outlook-legacy-promise/completion/critic-7566c9cedb334e9c86eeb1620c366d06.json",
-      "sha256": "6930fdc3a5b84fc0a44e1aec5ecbbec3455c13c943c3c58882af1fad1a6d242f"
+      "path": ".go/runs/outlook-legacy-promise/completion/critic-9c6ed931f6014abb9c9070f9c1c17173.json",
+      "sha256": "cd9b4f7bf1136ed95488e85605614f985e8c19f5240d77493af508607d938333"
     }
   }
 }

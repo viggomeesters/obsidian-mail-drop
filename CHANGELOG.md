@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.10.1 — 2026-11-11
 
 - Receive Outlook legacy file promises during the active drop instead of routing mixed legacy/modern metadata exclusively through the asynchronous receiver.
 - Validate completed legacy EML files and also detect modern Outlook files delivered without a completion callback.
 - Provide a saved-EML recovery action when a mail app does not deliver its promised files.
+- Direct Outlook dragging requires updating the separately installed macOS receiver and reconnecting it. Updating the standard plugin alone does not replace that executable.
 
 ## 0.10.0 — 2026-10-25
 
