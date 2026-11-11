@@ -1,0 +1,194 @@
+{
+  "version": "0.10.1",
+  "source_commit": "cfea28105c03ac550bdb159b91b2f918f36df0c6",
+  "pr": "https://github.com/viggomeesters/obsidian-mail-drop/pull/3",
+  "release": {
+    "assets": [
+      {
+        "apiUrl": "https://api.github.com/repos/viggomeesters/obsidian-mail-drop/releases/assets/736867972",
+        "contentType": "application/octet-stream",
+        "createdAt": "2026-11-11T20:35:35Z",
+        "digest": "sha256:9ed7ad5e032beac4221cf6b90f5b38521dc9b8aa024807a992d3b88531c7db96",
+        "downloadCount": 0,
+        "id": "RA_kwDOVWjG7M4r67aE",
+        "label": "",
+        "name": "LICENSE",
+        "size": 1071,
+        "state": "uploaded",
+        "updatedAt": "2026-11-11T20:35:35Z",
+        "url": "https://github.com/viggomeesters/obsidian-mail-drop/releases/download/0.10.1/LICENSE"
+      },
+      {
+        "apiUrl": "https://api.github.com/repos/viggomeesters/obsidian-mail-drop/releases/assets/736867968",
+        "contentType": "application/zip",
+        "createdAt": "2026-11-11T20:35:35Z",
+        "digest": "sha256:ecfe91ca19b4a683db5002867b0f13e732976484b60fea3cfe2c419bc5156004",
+        "downloadCount": 0,
+        "id": "RA_kwDOVWjG7M4r67aA",
+        "label": "",
+        "name": "mail-drop-0.10.1-macos.zip",
+        "size": 349437,
+        "state": "uploaded",
+        "updatedAt": "2026-11-11T20:35:35Z",
+        "url": "https://github.com/viggomeesters/obsidian-mail-drop/releases/download/0.10.1/mail-drop-0.10.1-macos.zip"
+      },
+      {
+        "apiUrl": "https://api.github.com/repos/viggomeesters/obsidian-mail-drop/releases/assets/736867967",
+        "contentType": "application/zip",
+        "createdAt": "2026-11-11T20:35:35Z",
+        "digest": "sha256:0f28c15bea5c9f94bf74c04466b812c8d8cedcbdd71bbbb608a40b0dc20060f5",
+        "downloadCount": 0,
+        "id": "RA_kwDOVWjG7M4r67Z_",
+        "label": "",
+        "name": "mail-drop-0.10.1-standard.zip",
+        "size": 106772,
+        "state": "uploaded",
+        "updatedAt": "2026-11-11T20:35:35Z",
+        "url": "https://github.com/viggomeesters/obsidian-mail-drop/releases/download/0.10.1/mail-drop-0.10.1-standard.zip"
+      },
+      {
+        "apiUrl": "https://api.github.com/repos/viggomeesters/obsidian-mail-drop/releases/assets/736867999",
+        "contentType": "application/zip",
+        "createdAt": "2026-11-11T20:35:36Z",
+        "digest": "sha256:185fceace6fc5e58840d6d0f032237fa66b4c43f03be9cacd24fe656fddbae2c",
+        "downloadCount": 0,
+        "id": "RA_kwDOVWjG7M4r67af",
+        "label": "",
+        "name": "mail-drop-receiver-0.10.1-macos.zip",
+        "size": 240485,
+        "state": "uploaded",
+        "updatedAt": "2026-11-11T20:35:36Z",
+        "url": "https://github.com/viggomeesters/obsidian-mail-drop/releases/download/0.10.1/mail-drop-receiver-0.10.1-macos.zip"
+      },
+      {
+        "apiUrl": "https://api.github.com/repos/viggomeesters/obsidian-mail-drop/releases/assets/736867995",
+        "contentType": "application/javascript",
+        "createdAt": "2026-11-11T20:35:36Z",
+        "digest": "sha256:9073ec898322020f7d8f001f8c2e8556f0c0dd81ef0688ed7f663c010b3e1906",
+        "downloadCount": 0,
+        "id": "RA_kwDOVWjG7M4r67ab",
+        "label": "",
+        "name": "main.js",
+        "size": 293935,
+        "state": "uploaded",
+        "updatedAt": "2026-11-11T20:35:36Z",
+        "url": "https://github.com/viggomeesters/obsidian-mail-drop/releases/download/0.10.1/main.js"
+      },
+      {
+        "apiUrl": "https://api.github.com/repos/viggomeesters/obsidian-mail-drop/releases/assets/736867997",
+        "contentType": "application/json",
+        "createdAt": "2026-11-11T20:35:36Z",
+        "digest": "sha256:6b799fc5022c7459896ae4223ae50a12b2d7d7a0588d9770eb7f6b595375d166",
+        "downloadCount": 0,
+        "id": "RA_kwDOVWjG7M4r67ad",
+        "label": "",
+        "name": "manifest.json",
+        "size": 279,
+        "state": "uploaded",
+        "updatedAt": "2026-11-11T20:35:36Z",
+        "url": "https://github.com/viggomeesters/obsidian-mail-drop/releases/download/0.10.1/manifest.json"
+      },
+      {
+        "apiUrl": "https://api.github.com/repos/viggomeesters/obsidian-mail-drop/releases/assets/736867998",
+        "contentType": "application/octet-stream",
+        "createdAt": "2026-11-11T20:35:36Z",
+        "digest": "sha256:5a36c64960ec916a97ccf7b4bbbd80262bb39b8b4b931a2b4634afe84431ef44",
+        "downloadCount": 0,
+        "id": "RA_kwDOVWjG7M4r67ae",
+        "label": "",
+        "name": "outlook-file-promises",
+        "size": 702288,
+        "state": "uploaded",
+        "updatedAt": "2026-11-11T20:35:36Z",
+        "url": "https://github.com/viggomeesters/obsidian-mail-drop/releases/download/0.10.1/outlook-file-promises"
+      },
+      {
+        "apiUrl": "https://api.github.com/repos/viggomeesters/obsidian-mail-drop/releases/assets/736867971",
+        "contentType": "text/plain; charset=utf-8",
+        "createdAt": "2026-11-11T20:35:35Z",
+        "digest": "sha256:a0c0da97cd947b0b2c1456db6c663cfe0f0de85e52014aa5b103ed02c0fa93fe",
+        "downloadCount": 0,
+        "id": "RA_kwDOVWjG7M4r67aD",
+        "label": "",
+        "name": "SHA256SUMS.txt",
+        "size": 773,
+        "state": "uploaded",
+        "updatedAt": "2026-11-11T20:35:35Z",
+        "url": "https://github.com/viggomeesters/obsidian-mail-drop/releases/download/0.10.1/SHA256SUMS.txt"
+      },
+      {
+        "apiUrl": "https://api.github.com/repos/viggomeesters/obsidian-mail-drop/releases/assets/736868003",
+        "contentType": "text/css; charset=utf-8",
+        "createdAt": "2026-11-11T20:35:36Z",
+        "digest": "sha256:e49da0991465c322381a5babdd29f175d0dae0e2825204d81e14d10c48e5093b",
+        "downloadCount": 0,
+        "id": "RA_kwDOVWjG7M4r67aj",
+        "label": "",
+        "name": "styles.css",
+        "size": 711,
+        "state": "uploaded",
+        "updatedAt": "2026-11-11T20:35:36Z",
+        "url": "https://github.com/viggomeesters/obsidian-mail-drop/releases/download/0.10.1/styles.css"
+      },
+      {
+        "apiUrl": "https://api.github.com/repos/viggomeesters/obsidian-mail-drop/releases/assets/736867973",
+        "contentType": "application/octet-stream",
+        "createdAt": "2026-11-11T20:35:35Z",
+        "digest": "sha256:8df9a199d790f5c136168ada10ace2f2b5b37eb56219179e70e49fd85db601e0",
+        "downloadCount": 0,
+        "id": "RA_kwDOVWjG7M4r67aF",
+        "label": "",
+        "name": "THIRD_PARTY_NOTICES.md",
+        "size": 17179,
+        "state": "uploaded",
+        "updatedAt": "2026-11-11T20:35:35Z",
+        "url": "https://github.com/viggomeesters/obsidian-mail-drop/releases/download/0.10.1/THIRD_PARTY_NOTICES.md"
+      }
+    ],
+    "isDraft": false,
+    "isPrerelease": false,
+    "publishedAt": "2026-11-11T20:43:37Z",
+    "tagName": "0.10.1",
+    "url": "https://github.com/viggomeesters/obsidian-mail-drop/releases/tag/0.10.1"
+  },
+  "anonymous_download_checksums": "all match",
+  "checksums": "9073ec898322020f7d8f001f8c2e8556f0c0dd81ef0688ed7f663c010b3e1906  main.js\n6b799fc5022c7459896ae4223ae50a12b2d7d7a0588d9770eb7f6b595375d166  manifest.json\ne49da0991465c322381a5babdd29f175d0dae0e2825204d81e14d10c48e5093b  styles.css\n5a36c64960ec916a97ccf7b4bbbd80262bb39b8b4b931a2b4634afe84431ef44  outlook-file-promises\n9ed7ad5e032beac4221cf6b90f5b38521dc9b8aa024807a992d3b88531c7db96  LICENSE\n8df9a199d790f5c136168ada10ace2f2b5b37eb56219179e70e49fd85db601e0  THIRD_PARTY_NOTICES.md\necfe91ca19b4a683db5002867b0f13e732976484b60fea3cfe2c419bc5156004  mail-drop-0.10.1-macos.zip\n185fceace6fc5e58840d6d0f032237fa66b4c43f03be9cacd24fe656fddbae2c  mail-drop-receiver-0.10.1-macos.zip\n0f28c15bea5c9f94bf74c04466b812c8d8cedcbdd71bbbb608a40b0dc20060f5  mail-drop-0.10.1-standard.zip\n",
+  "local_verification": "58 tests, lint, standard build, universal receiver, native and legacy self-tests pass",
+  "independent_review": "approved by independent review subagent",
+  "clean_install": "npm ci passed",
+  "audit": {
+    "moderate": 11,
+    "scope": "existing eslint toolchain, not bundled runtime",
+    "production_scanner": "official preview dependencies pass"
+  },
+  "community_install": {
+    "version": "0.10.1",
+    "fresh_native_enabled": false,
+    "exact_bundle_payload": true,
+    "app_added_suffix": "\n/* nosourcemap */",
+    "prior_settings_restored": true,
+    "receiver_connected": true,
+    "test_note_and_eml_unchanged": true
+  },
+  "official_preview": {
+    "commit": "cfea28105c03ac550bdb159b91b2f918f36df0c6",
+    "status": "Completed",
+    "dependencies": "Pass"
+  },
+  "official_release_review": {
+    "status": "Completed",
+    "dependencies": "Pass",
+    "build_verification": "Pass: Build reproduced the release main.js byte-for-byte",
+    "behavior_warnings": [
+      "Direct Filesystem Access",
+      "Shell Execution"
+    ],
+    "recommendations": [
+      "Missing artifact attestations",
+      "Extra manually installed assets"
+    ],
+    "assessment": "Expected filesystem/child-process behavior is scoped and disclosed; manual receiver assets intentional; no GitHub Actions added for optional attestations. No blocking finding."
+  },
+  "workflow_note": "Legacy task has no execution_contract; runtime completion readback interface is unavailable for this historical task. Explicit GitHub API, anonymous download and actual installation evidence are recorded here instead.",
+  "directory_current_version": "0.10.1"
+}
