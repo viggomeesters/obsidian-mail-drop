@@ -16,6 +16,8 @@ Requires macOS 13+. Apple Silicon has real provider tests; Intel has only been c
 
 ## Existing installations
 
+For the Outlook fix in 0.10.1, download `mail-drop-receiver-0.10.1-macos.zip` from [the 0.10.1 release](https://github.com/viggomeesters/obsidian-mail-drop/releases/tag/0.10.1), verify its checksum and replace your existing receiver executable. Keep the same path and select **Connect** again, or reload Mail Drop. The standard Community plugin update does not replace a separately installed receiver.
+
 Existing saved preferences preserve native reception. An empty receiver path reuses an already present `outlook-file-promises` in the plugin folder for compatibility. A missing receiver does not prevent file imports or install anything; settings explain how to connect one. Keep your existing `data.json` when updating.
 
 Disabling the native toggle stops the receiver. Unloading the plugin also stops it and closes progress notices. Receiver restarts replace the previous child rather than installing a system service.

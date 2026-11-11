@@ -2,6 +2,8 @@
 
 Import examples and candidate test evidence: [validation](docs/validation-0.10.0.md).
 
+Outlook drag compatibility in 0.10.1: [validation](docs/validation-outlook-legacy.md). Existing native-drag users must also [update the separate macOS receiver](docs/native-receiver.md#existing-installations).
+
 Drag emails from Apple Mail or Microsoft Outlook into an Obsidian note. Keep the original `.eml` beside the note, with a paperclip heading, a link, and a collapsed preview.
 
 Mail Drop also controls attachment links: embed images and link PDFs, spreadsheets, and other documents. Optional date prefixes and kebab-case names keep new files consistent.
