@@ -44,6 +44,8 @@ Added on 25 Oct 2026 at 10:00
 
 Set **Added by** to include your name after the timestamp. The preview is collapsed by default. Original bytes, including attachments, remain in the EML. Dates use the computer's local timezone; the optional filename prefix uses the date of import.
 
+Enable **Event Note v1** for provenance-aware Activity notes. Each import gets a dated Mail Drop tool entry, with the original sender, recipients and mail date in its folded source preview. Existing note content is preserved. Identical EML bytes are reused even when an exporter changes the filename.
+
 Dropping the same email again reuses matching files and links. Different content receives a filename suffix. Existing note text and previews are preserved. If importing fails, received originals remain in the private temporary folder so they can be recovered; do not delete these folders until you have recovered the message.
 
 ## Settings

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attachmentBlock, importAttachments, safeEmlName } from "../src/attachments";
+import { attachmentBlock, importAttachments, safeEmlName, findSameAttachment } from "../src/attachments";
 
 const file = (name: string, content = "From: test@example.com\r\nSubject: Test\r\n\r\nOrigineel café\r\n") => ({name, arrayBuffer: async () => new TextEncoder().encode(content).buffer});
 function fixture() {
@@ -16,6 +16,39 @@ function fixture() {
 }
 const when = new Date(2026,9,23,10,0);
 describe("originele mail als attachment",()=>{
+ it("reuses renamed identical EML exports by bytes without merging unequal sources",async()=>{
+  const f=fixture(),input=file("source.eml");
+  const store={...f.store,findSame:(original:string,bytes:ArrayBuffer)=>findSameAttachment(original,bytes,[...f.binaries].map(([path,content])=>({path,name:path.split("/").pop()!,size:content.byteLength})),f.store.read)};
+  await importAttachments([input],"map",store,when,{eventNoteV1:true,preview:true});
+  const before=f.text();await importAttachments([file("renamed.eml")],"map",store,when,{eventNoteV1:true,preview:true});
+  expect(f.binaries.size).toBe(1);expect(f.text()).toBe(before);
+  await importAttachments([file("renamed.eml","Subject: Other\r\n\r\nOther body")],"map",store,when,{eventNoteV1:true,preview:true});
+  expect(f.binaries.size).toBe(2);expect(f.text().match(/activity-message\|agent/g)).toHaveLength(2);
+ });
+ it("captures Event Notes with direct tool provenance, nested source headers and immutable retries",async()=>{
+  const f=fixture(),input=file("event.eml");
+  const result=await importAttachments([input],"map",f.store,when,{eventNoteV1:true,preview:true,author:"Not the sender"});
+  expect(result.added).toBe(1);
+  expect(f.text()).toContain("> [!activity-day|2026-10-23]");
+  expect(f.text()).toContain("> [!activity-message|agent] Mail Drop\n> `10:00 · Mail Drop · Obsidian`\n> <!-- viggobsidian:activity:v1 kind=result goal=mail-import-");
+  expect(f.text()).toContain("> > [!info]- Meer\n> > <!-- outlook-drop-preview:");
+  expect(f.text()).toContain("> > **From:** test@example.com");
+  expect(f.text()).toContain("Origineel café");
+  expect(f.text()).not.toContain("Not the sender");
+  expect(new Uint8Array(f.binaries.get("map/event.eml")!)).toEqual(new Uint8Array(await input.arrayBuffer()));
+  const before=f.text();await importAttachments([input],"map",f.store,new Date(2026,9,24),{eventNoteV1:true,preview:true});
+  expect(f.text()).toBe(before);expect(f.binaries.size).toBe(1);
+ });
+ it("enriches its Event Note preview once without a From header or rewriting a human link",async()=>{
+  const f=fixture(),input=file("event.eml","Subject: Example\r\n\r\nBody\r\n");
+  await importAttachments([input],"map",f.store,when,{eventNoteV1:true});
+  await importAttachments([input],"map",f.store,when,{eventNoteV1:true,preview:true});
+  const before=f.text();await importAttachments([input],"map",f.store,when,{eventNoteV1:true,preview:true});
+  expect(f.text()).toBe(before);expect(before.match(/activity-message\|agent/g)).toHaveLength(1);
+  expect(before.match(/outlook-drop-preview:/g)).toHaveLength(1);
+  const g=fixture();await g.store.append(s=>s+"\n[[event.eml]]\n");const human=g.text();
+  await importAttachments([input],"map",g.store,when,{eventNoteV1:true,preview:true});expect(g.text()).toBe(human);
+ });
  it("bewaart originele bytes naast de note en voegt het exacte voorbeeldblok toe",async()=>{
   const f=fixture(), input=file("Accepted Project Planning.eml");
   const result=await importAttachments([input],"00-inbox/voorbeeld",f.store,when);
