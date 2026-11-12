@@ -61,7 +61,7 @@ function eventDetails(record:Record,preview=true,extras=record.extras):string {
 }
 function eventBlock(record:Record,when:Date):string {
  const time=Number.isFinite(when.getTime())?`${String(when.getHours()).padStart(2,"0")}:${String(when.getMinutes()).padStart(2,"0")}`:"—";
- return `> [!activity-message|agent] Mail Drop\n> \`${time} · Mail Drop · Obsidian\`\n> <!-- viggobsidian:activity:v1 kind=result goal=mail-import-${record.id.slice(0,16)} -->\n> <!-- outlook-drop-event:${record.id} -->\n> **${mailTitle(record.subject)}**\n> ${record.link}\n`+eventDetails(record)+`> <!-- /outlook-drop-event:${record.id} -->\n`;
+ return `> [!activity-message|agent] Mail Drop <span class="activity-meta">${time} · Obsidian</span>\n> <!-- viggobsidian:activity:v1 kind=result goal=mail-import-${record.id.slice(0,16)} -->\n> <!-- outlook-drop-event:${record.id} -->\n> **${mailTitle(record.subject)}**\n> ${record.link}\n`+eventDetails(record)+`> <!-- /outlook-drop-event:${record.id} -->\n`;
 }
 export async function importAttachments(files:MailFile[],folder:string,store:AttachmentStore,when=new Date(),options:{nameMode?:NameMode;preview?:boolean;extract?:boolean;author?:string;eventNoteV1?:boolean}={}) {
  const records:Record[]=[],failures:{name:string;error:unknown}[]=[],previewFailures:string[]=[],extractionFailures:{name:string;error:unknown}[]=[];
