@@ -29,6 +29,8 @@ The public Community listing is https://community.obsidian.md/plugins/outlook-dr
 
 The complete 0.9.1 release review finished without errors but reported a build-verification warning because Python was unavailable. Version 0.9.2 generates the same license notices with Node.js. Its standard build was verified with a restricted PATH containing only Node and the platform shell, with no Python. Runtime bundle bytes are unchanged. See `validation-0.9.2.md`.
 
-## App catalog propagation
+## App catalog acceptance
 
-The listing is public, with the correct separate-receiver disclosure, paperclip icon and two synthetic screenshots. The real in-app catalog installation check is pending because the new ID was absent from the app/legacy catalog immediately after publication. [Obsidian documents up to 24 hours](https://obsidian.md/blog/future-of-plugins/) for new projects to reach in-app search/download. Do not claim this last acceptance step passed until a clean dedicated-vault install succeeds.
+The initial 0.9.2 catalog-propagation wait was superseded by a successful fresh Community installation of 0.10.0 on 25 October 2026. On 11 November 2026, 0.10.1 was also freshly installed through the actual Obsidian Community CLI in the isolated test vault. The installed payload matched the published bundle, apart from Obsidian's exact appended `\n/* nosourcemap */` suffix. Existing settings were restored, the receiver reconnected and the test note/EML remained unchanged.
+
+The official source preview and full 0.10.1 release review completed with Dependencies and byte-for-byte Build verification passing. Its ten assets were anonymously downloaded and hash-checked, and the public listing showed 0.10.1. These are recorded acceptance results, not a claim that a new installation or provider drag was repeated during the review reconciliation on 12 November. See [review reconciliation](review-reconciliation-2026-11-12.md) and [the released Outlook validation](validation-outlook-legacy.md).
