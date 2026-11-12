@@ -30,7 +30,8 @@ describe("originele mail als attachment",()=>{
   const result=await importAttachments([input],"map",f.store,when,{eventNoteV1:true,preview:true,author:"Not the sender"});
   expect(result.added).toBe(1);
   expect(f.text()).toContain("> [!activity-day|2026-10-23]");
-  expect(f.text()).toContain("> [!activity-message|agent] Mail Drop\n> `10:00 · Mail Drop · Obsidian`\n> <!-- viggobsidian:activity:v1 kind=result goal=mail-import-");
+  expect(f.text()).toContain('> [!activity-message|agent] Mail Drop <span class="activity-meta">10:00 · Obsidian</span>\n> <!-- viggobsidian:activity:v1 kind=result goal=mail-import-');
+  expect(f.text()).not.toContain('`10:00 · Mail Drop');
   expect(f.text()).toContain("> > [!info]- Meer\n> > <!-- outlook-drop-preview:");
   expect(f.text()).toContain("> > **From:** test@example.com");
   expect(f.text()).toContain("Origineel café");
