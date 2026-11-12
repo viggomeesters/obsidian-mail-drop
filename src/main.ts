@@ -1,5 +1,5 @@
 import { FileSystemAdapter, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, Platform, type SettingDefinitionItem, TFile, TFolder } from "obsidian";
-import { importAttachments, MailFile, sameBytes } from "./attachments";
+import { importAttachments, MailFile, findSameAttachment } from "./attachments";
 import { NativeBridge, NativeEvent, NativeTarget, helperPath, nativeMailFiles } from "./native";
 import { rm } from "node:fs/promises";
 import { DropMode, linkedExtensions, wantsPlainLink, droppedFileLink } from "./drop-links";
@@ -9,7 +9,7 @@ import {claimAttachmentDrop,delegateAttachmentLink} from "./link-rules";
 import {readSettings,defaultSettings,type MailDropSettings} from "./settings";
 import {installedReceiver} from "./receiver";
 
-import {attachmentFilename, NameMode, numberedFilename, sameImportName} from "./naming";
+import {attachmentFilename, NameMode, numberedFilename} from "./naming";
 
 export function droppedMails(transfer: DataTransfer | null): File[] {
  const files=Array.from(transfer?.files ?? []);
@@ -225,11 +225,9 @@ export default class OutlookDropImporter extends Plugin {
  private async findSame(folder:string,original:string,bytes:ArrayBuffer):Promise<string|undefined> {
   const parent=folder?this.app.vault.getAbstractFileByPath(folder):this.app.vault.getRoot();
   if(!(parent instanceof TFolder))return;
-  for(const file of parent.children) {
-   if(!(file instanceof TFile)||file.stat.size!==bytes.byteLength||!sameImportName(original,file.name))continue;
-   try{if(sameBytes(await this.app.vault.readBinary(file),bytes))return file.path;}catch{/* Keep unreadable originals untouched. */}
-  }
-  return undefined;
+  return findSameAttachment(original,bytes,parent.children.filter((file):file is TFile=>file instanceof TFile).map(file=>({name:file.name,path:file.path,size:file.stat.size})),async path=>{
+   const file=this.app.vault.getAbstractFileByPath(path);if(!(file instanceof TFile))throw Error("File not found");return this.app.vault.readBinary(file);
+  });
  }
 
  private async importFiles(files:MailFile[],note:TFile,view:MarkdownView|undefined,when:Date):Promise<boolean> {
@@ -252,7 +250,7 @@ export default class OutlookDropImporter extends Plugin {
     if(!(file instanceof TFile)) throw Error("Email file not found");
     return `[[${this.app.metadataCache.fileToLinktext(file,note.path,false)}]]`;
    }
-  },when,{nameMode:this.settings.nameMode,preview:this.settings.mailPreview,extract:this.settings.extractAttachments,author:this.settings.logAuthor});
+  },when,{nameMode:this.settings.nameMode,preview:this.settings.mailPreview,extract:this.settings.extractAttachments,author:this.settings.logAuthor,eventNoteV1:this.settings.eventNoteV1});
   if(result.previewFailures.length)new Notice("Email saved, but its text could not be read. Open the original file.",10000);
   if(result.extractionFailures.length) {
    console.error("Email attachments:",result.extractionFailures);
@@ -297,6 +295,8 @@ class DropSettingsTab extends PluginSettingTab {
     .setValue(this.plugin.settings.nameMode).onChange(async value=>{this.plugin.settings.nameMode=value as NameMode;await this.plugin.saveData(this.plugin.settings);})));
   add("Email preview", setting=>setting.setDesc("Show email text below its link, collapsed by default.")
    .addToggle(toggle=>toggle.setValue(this.plugin.settings.mailPreview).onChange(async value=>{this.plugin.settings.mailPreview=value;await this.plugin.saveData(this.plugin.settings);})));
+  add("Event Note v1", setting=>setting
+   .addToggle(toggle=>toggle.setValue(this.plugin.settings.eventNoteV1).onChange(async value=>{this.plugin.settings.eventNoteV1=value;await this.plugin.saveData(this.plugin.settings);})));
   add("Extract email attachments", setting=>setting.setDesc("Save beside the email and link in the note. Inline images stay in the email.")
    .addToggle(toggle=>toggle.setValue(this.plugin.settings.extractAttachments).onChange(async value=>{this.plugin.settings.extractAttachments=value;await this.plugin.saveData(this.plugin.settings);})));
   add("Added by", setting=>setting.setDesc("Optional name shown in new email entries.")

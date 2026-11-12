@@ -1,4 +1,4 @@
-import {attachmentFilename, NameMode, numberedFilename} from "./naming";
+import {attachmentFilename, NameMode, numberedFilename, sameImportName} from "./naming";
 import {failedPreview, legacyFailedPreview, parseMail, renderMailPreview} from "./mail-preview";
 import {mailFiles} from "./mail-files";
 import {localDate,mailTitle,mailLiteral} from "./mail-format";
@@ -26,6 +26,15 @@ export function sameBytes(a:ArrayBuffer,b:ArrayBuffer):boolean {
  const left=new Uint8Array(a),right=new Uint8Array(b);
  return left.length===right.length&&left.every((value,index)=>value===right[index]);
 }
+/** Mail identity is its exact bytes, even when an exporter renames the same source. */
+export async function findSameAttachment(original:string,bytes:ArrayBuffer,files:{name:string;path:string;size:number}[],read:(path:string)=>Promise<ArrayBuffer>):Promise<string|undefined> {
+ for(const file of files) {
+  const eml=/\.eml$/i.test(original)&&/\.eml$/i.test(file.name);
+  if(file.size!==bytes.byteLength||(!eml&&!sameImportName(original,file.name)))continue;
+  try{if(sameBytes(await read(file.path),bytes))return file.path;}catch{/* Keep unreadable originals untouched. */}
+ }
+ return undefined;
+}
 async function saveFile(original:string,bytes:ArrayBuffer,folder:string,store:AttachmentStore,when:Date,mode:NameMode|undefined,mail=false):Promise<string> {
  const reused=await store.findSame?.(original,bytes);
  if(reused)return reused;
@@ -46,7 +55,15 @@ const previewStart=/^\s*> \[!quote(?:\|outlook-mail)?\]- (?:Mailinhoud|Email con
 function extrasBlock(record:Record):string {
  return `\n\n<!-- outlook-drop-attachments:${record.id} -->\nAttachments: ${record.extras.join(" · ")}\n<!-- /outlook-drop-attachments -->\n`;
 }
-export async function importAttachments(files:MailFile[],folder:string,store:AttachmentStore,when=new Date(),options:{nameMode?:NameMode;preview?:boolean;extract?:boolean;author?:string}={}) {
+function eventDetails(record:Record,preview=true,extras=record.extras):string {
+ const lines=[...(extras.length?[`Attachments: ${extras.join(" · ")}`]:[]),...(preview&&record.preview?[`<!-- outlook-drop-preview:${record.id} -->`,...record.preview.trimEnd().split("\n").slice(1).map(line=>line.replace(/^> ?/,""))]:[])];
+ return lines.length?`>\n> > [!info]- Meer\n`+lines.map(line=>line?`> > ${line}`:"> >").join("\n")+"\n":"";
+}
+function eventBlock(record:Record,when:Date):string {
+ const time=Number.isFinite(when.getTime())?`${String(when.getHours()).padStart(2,"0")}:${String(when.getMinutes()).padStart(2,"0")}`:"—";
+ return `> [!activity-message|agent] Mail Drop\n> \`${time} · Mail Drop · Obsidian\`\n> <!-- viggobsidian:activity:v1 kind=result goal=mail-import-${record.id.slice(0,16)} -->\n> <!-- outlook-drop-event:${record.id} -->\n> **${mailTitle(record.subject)}**\n> ${record.link}\n`+eventDetails(record)+`> <!-- /outlook-drop-event:${record.id} -->\n`;
+}
+export async function importAttachments(files:MailFile[],folder:string,store:AttachmentStore,when=new Date(),options:{nameMode?:NameMode;preview?:boolean;extract?:boolean;author?:string;eventNoteV1?:boolean}={}) {
  const records:Record[]=[],failures:{name:string;error:unknown}[]=[],previewFailures:string[]=[],extractionFailures:{name:string;error:unknown}[]=[];
  for(const file of files) {
   try {
@@ -81,6 +98,26 @@ export async function importAttachments(files:MailFile[],folder:string,store:Att
    added=0;enriched=0;
    for(const record of records) {
     const {link,preview}=record;
+    if(options.eventNoteV1) {
+     if(!current.includes(link)&&!current.includes(`> <!-- outlook-drop-event:${record.id} -->`)) {
+      const day=`${when.getFullYear()}-${String(when.getMonth()+1).padStart(2,"0")}-${String(when.getDate()).padStart(2,"0")}`;
+      const lastDay=[...current.matchAll(/^> \[!activity-day\|([^\]]+)\]/gm)].at(-1)?.[1];
+      current+=(current.endsWith("\n\n")?"":current.endsWith("\n")?"\n":"\n\n")+(lastDay===day?"":`> [!activity-day|${day}] ${day}\n\n`)+eventBlock(record,when);added++;
+     } else {
+      // Enrich only our hash-bound generated block. Never rewrite a human link or legacy capture.
+      const open=current.indexOf(`> <!-- outlook-drop-event:${record.id} -->`);
+      const close=open<0?-1:current.indexOf(`> <!-- /outlook-drop-event:${record.id} -->`,open);
+      if(close>=0) {
+       const existing=current.slice(open,close);
+       const extras=record.extras.filter(extra=>!existing.includes(extra));
+       const needsPreview=!!preview&&!existing.includes(`<!-- outlook-drop-preview:${record.id} -->`);
+       if(extras.length||needsPreview) {
+        current=current.slice(0,close)+eventDetails(record,needsPreview,extras)+current.slice(close);enriched++;
+       }
+      }
+     }
+     continue;
+    }
     if(!current.includes(link)) {
      const separator=current.endsWith("\n\n")?"":current.endsWith("\n")?"\n":current?"\n\n":"";
      current+=separator+attachmentBlock(link,when,record.subject,options.author)+(record.extras.length?extrasBlock(record):"")+(preview?"\n"+preview:"");added++;continue;
