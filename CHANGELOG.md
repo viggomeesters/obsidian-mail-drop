@@ -7,7 +7,7 @@
 
 - Preserve import provenance and identify repeated mail after its source file is renamed.
 - Use inline metadata for Event Note mail headers.
-- See [the Obsidian 1.15.1 assessment](docs/obsidian-1.15.1.md) for local validation and the outstanding real-host/provider checks.
+- Verify the standard plugin in isolated Obsidian1.15.1, including synthetic document drop/import/preview, repeat/empty handling and actual Settings callbacks. Real Outlook/Apple Mail provider interaction is not retested; the optional native receiver is unchanged. See [the exact assessment](docs/obsidian-1.15.1.md).
 
 ## 0.10.1 — 2026-11-11
 
