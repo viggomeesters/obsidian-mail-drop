@@ -2,9 +2,12 @@
 
 ## 0.10.2 — unreleased
 
+- Bind the initial drag/drop listeners and targetless-drop fallback to Obsidian's active document; retain per-window listeners and the drop target's own document.
+- Update official Obsidian lint to0.6.0 and add a discriminating headless active-document regression.
+
 - Preserve import provenance and identify repeated mail after its source file is renamed.
 - Use inline metadata for Event Note mail headers.
-- See [the Obsidian 1.15.1 assessment](docs/obsidian-1.15.1.md) for local validation and the outstanding real-host/provider checks.
+- Verify the standard plugin in isolated Obsidian1.15.1, including synthetic document drop/import/preview, repeat/empty handling, actual Settings callbacks and installed native receiver opt-in/ready/disable/exit. Real Outlook/Apple Mail provider drags are not retested; the optional receiver is unchanged. See [the exact assessment](docs/obsidian-1.15.1.md).
 
 ## 0.10.1 — 2026-11-11
 

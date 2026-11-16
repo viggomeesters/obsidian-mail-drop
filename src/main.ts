@@ -53,7 +53,7 @@ export default class OutlookDropImporter extends Plugin {
   this.register(()=>{this.unloading=true;this.receiverGeneration++;this.native?.stop();for(const notice of this.receivingNotices.values())notice.hide();this.receivingNotices.clear();});
   this.app.workspace.onLayoutReady(()=>{
   if(this.unloading)return;
-  register(document);
+  register(activeDocument);
   this.app.workspace.iterateAllLeaves(leaf=>register(leaf.view.containerEl.ownerDocument));
   this.registerEvent(this.app.workspace.on("window-open",(_workspace,win)=>register(win.document)));
   const refresh=()=>this.refreshNativeTargets();
@@ -96,7 +96,7 @@ export default class OutlookDropImporter extends Plugin {
   // Read native file objects synchronously: DataTransfer is protected after drop.
   const files=droppedMails(event.dataTransfer);
   if(!files.length) {this.handleDocumentDrop(event);return;}
-  claimAttachmentDrop((event.target as Node|null)?.ownerDocument??document,event);
+  claimAttachmentDrop((event.target as Node|null)?.ownerDocument??activeDocument,event);
   event.preventDefault();
   event.stopImmediatePropagation();
   const element=event.target as Node|null;

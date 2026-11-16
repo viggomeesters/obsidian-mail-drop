@@ -16,7 +16,7 @@ if(await exists(path.join(pluginDir,'outlook-file-promises')))throw Error('Stand
 const target=`fixtures/mail-drop/automated-${process.pid}-${Date.now()}/target.md`;
 await fs.mkdir(path.dirname(path.join(root,target)),{recursive:true});
 await fs.writeFile(path.join(root,target),'# Synthetic target\n\nHuman text stays.\n');
-const entries=new Map();const notices=[];const callbacks=[];const intervals=[];
+const entries=new Map();const notices=[];const callbacks=[];const intervals=[];const registeredDocuments=[];const legacyDocument={};const currentDocument={};
 class TFolder{constructor(p){this.path=p;this.children=[];}}
 class TFile{constructor(p,size){this.path=p;this.name=path.basename(p);this.extension=path.extname(p).slice(1);this.stat={size};this.parent=folder(path.dirname(p));}}
 function folder(p){if(!entries.has(p))entries.set(p,new TFolder(p));return entries.get(p);}
@@ -27,16 +27,19 @@ const vault={adapter,configDir:'.obsidian',getRoot:()=>folder('.'),getAbstractFi
  createBinary:async(p,bytes)=>{await fs.writeFile(path.join(root,p),new Uint8Array(bytes),{flag:'wx'});const f=new TFile(p,bytes.byteLength);entries.set(p,f);f.parent.children.push(f);return f;},
  process:async(f,update)=>{const p=path.join(root,f.path);await fs.writeFile(p,update(await fs.readFile(p,'utf8')));},};
 const app={vault,workspace:{onLayoutReady:cb=>cb(),iterateAllLeaves:()=>{},on:()=>({}),offref:()=>{}},metadataCache:{fileToLinktext:f=>f.name}};
-class Plugin{constructor(app,manifest){this.app=app;this.manifest=manifest;}loadData(){return undefined;}async saveData(data){await fs.writeFile(path.join(pluginDir,'data.json'),JSON.stringify(data));}addSettingTab(){}register(fn){callbacks.push(fn);}registerDomEvent(){}registerEvent(){}registerInterval(id){intervals.push(id);}}
+class Plugin{constructor(app,manifest){this.app=app;this.manifest=manifest;}loadData(){return undefined;}async saveData(data){await fs.writeFile(path.join(pluginDir,'data.json'),JSON.stringify(data));}addSettingTab(){}register(fn){callbacks.push(fn);}registerDomEvent(doc){registeredDocuments.push(doc);}registerEvent(){}registerInterval(id){intervals.push(id);}}
 class PluginSettingTab{constructor(app,plugin){this.app=app;this.plugin=plugin;}}
 class Notice{constructor(message){notices.push(message);}hide(){}}
 const obsidian={Plugin,PluginSettingTab,Notice,FileSystemAdapter,TFile,TFolder,MarkdownView:class{},Setting:class{},Platform:{isMacOS:process.platform==='darwin'}};
 const require=createRequire(path.resolve('outputs/obsidian-outlook-drop/main.js'));const module={exports:{}};
-vm.runInNewContext(await fs.readFile(path.join(pluginDir,'main.js'),'utf8'),{require:name=>name==='obsidian'?obsidian:require(name),module,exports:module.exports,console,process,Buffer,Blob,TextEncoder,TextDecoder,Date,Uint8Array,ArrayBuffer,window:{setInterval},document:{},setTimeout,clearTimeout},{filename:'mail-drop-release.js',displayErrors:false});
+const bundle=await fs.readFile(path.join(pluginDir,'main.js'),'utf8');
+const testedBundle=process.env.MAIL_DROP_NEGATIVE_DOCUMENT==='1'?bundle.replaceAll('activeDocument','document'):bundle;
+vm.runInNewContext(testedBundle,{require:name=>name==='obsidian'?obsidian:require(name),module,exports:module.exports,console,process,Buffer,Blob,TextEncoder,TextDecoder,Date,Uint8Array,ArrayBuffer,window:{setInterval},document:legacyDocument,activeDocument:currentDocument,setTimeout,clearTimeout},{filename:'mail-drop-release.js',displayErrors:false});
 const p=new module.exports.default(app,JSON.parse(await fs.readFile('manifest.json','utf8')));
 const checks={};const check=(name,value)=>{checks[name]=!!value;if(!value)throw Error(name);};
 try{
  await p.onload();await delay(30);
+ check('drop listeners use the active document when the legacy document differs',registeredDocuments.length===2&&registeredDocuments.every(doc=>doc===currentDocument));
  check('three-file install has no native child',!p.native&&!p.settings.nativeEnabled);
  check('no missing-receiver startup notice',notices.length===0);
  const raw=await fs.readFile(path.join(root,'fixtures/mail-drop/plain.eml'));
