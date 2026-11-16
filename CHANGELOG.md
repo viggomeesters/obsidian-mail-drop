@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.2 — unreleased
+
+- Preserve import provenance and identify repeated mail after its source file is renamed.
+- Use inline metadata for Event Note mail headers.
+- See [the Obsidian 1.15.1 assessment](docs/obsidian-1.15.1.md) for local validation and the outstanding real-host/provider checks.
+
 ## 0.10.1 — 2026-11-11
 
 - Receive Outlook legacy file promises during the active drop instead of routing mixed legacy/modern metadata exclusively through the asynchronous receiver.
