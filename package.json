@@ -17,7 +17,7 @@
     "@types/node": "^22.10.0",
     "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
-    "eslint-plugin-obsidianmd": "^0.4.2",
+    "eslint-plugin-obsidianmd": "0.6.0",
     "html-to-text": "^10.0.1",
     "obsidian": "^1.14.4",
     "postal-mime": "^2.4.4",
