@@ -293,11 +293,11 @@ class DropSettingsTab extends PluginSettingTab {
    .setDesc("For new attachments. Adds today’s date if the name has no full date.")
    .addDropdown(dropdown=>dropdown.addOption("date-kebab","Date + kebab-case").addOption("kebab","Kebab-case only").addOption("original","Original name")
     .setValue(this.plugin.settings.nameMode).onChange(async value=>{this.plugin.settings.nameMode=value as NameMode;await this.plugin.saveData(this.plugin.settings);})));
-  add("Email preview", setting=>setting.setDesc("Show email text below its link, collapsed by default.")
+  add("Email preview", setting=>setting.setDesc("Show email text and supported embedded images in a collapsed preview.")
    .addToggle(toggle=>toggle.setValue(this.plugin.settings.mailPreview).onChange(async value=>{this.plugin.settings.mailPreview=value;await this.plugin.saveData(this.plugin.settings);})));
   add("Event Note v1", setting=>setting
    .addToggle(toggle=>toggle.setValue(this.plugin.settings.eventNoteV1).onChange(async value=>{this.plugin.settings.eventNoteV1=value;await this.plugin.saveData(this.plugin.settings);})));
-  add("Extract email attachments", setting=>setting.setDesc("Save beside the email and link in the note. Inline images stay in the email.")
+  add("Extract email attachments", setting=>setting.setDesc("Save attached files beside the email and link them in the note.")
    .addToggle(toggle=>toggle.setValue(this.plugin.settings.extractAttachments).onChange(async value=>{this.plugin.settings.extractAttachments=value;await this.plugin.saveData(this.plugin.settings);})));
   add("Added by", setting=>setting.setDesc("Optional name shown in new email entries.")
    .addText(text=>text.setValue(this.plugin.settings.logAuthor).onChange(async value=>{this.plugin.settings.logAuthor=value;await this.plugin.saveData(this.plugin.settings);})));

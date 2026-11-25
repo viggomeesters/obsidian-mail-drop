@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.10.2 — unreleased
+## 0.11.0 — unreleased
+
+- Save referenced inline raster images locally and show them in email previews. Reimporting an existing generated Event Note can add the missing images without replacing its text.
+
+## 0.10.2 — 2026-11-16
 
 - Bind the initial drag/drop listeners and targetless-drop fallback to Obsidian's active document; retain per-window listeners and the drop target's own document.
 - Update official Obsidian lint to0.6.0 and add a discriminating headless active-document regression.

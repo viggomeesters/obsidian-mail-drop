@@ -1,6 +1,6 @@
 import {attachmentFilename, NameMode, numberedFilename, sameImportName} from "./naming";
 import {failedPreview, legacyFailedPreview, parseMail, renderMailPreview} from "./mail-preview";
-import {mailFiles} from "./mail-files";
+import {inlineImageFiles,mailFiles} from "./mail-files";
 import {localDate,mailTitle,mailLiteral} from "./mail-format";
 import {createHash} from "node:crypto";
 /** Keep original bytes unchanged; previews and extracted files are separate derivatives. */
@@ -50,18 +50,32 @@ async function saveFile(original:string,bytes:ArrayBuffer,folder:string,store:At
  }
  throw Error("No available filename found.");
 }
-interface Record {subject?:string;link:string;preview?:string;extras:string[];id:string;}
+interface Record {subject?:string;link:string;preview?:string;positionedPreview?:string;extras:string[];inlineImages:string[];hasInlineImages?:boolean;placeholders?:Map<string,string>;id:string;}
 const previewStart=/^\s*> \[!quote(?:\|outlook-mail)?\]- (?:Mailinhoud|Email content|Mail ·)/;
 function extrasBlock(record:Record):string {
  return `\n\n<!-- outlook-drop-attachments:${record.id} -->\nAttachments: ${record.extras.join(" · ")}\n<!-- /outlook-drop-attachments -->\n`;
 }
-function eventDetails(record:Record,preview=true,extras=record.extras):string {
- const lines=[...(extras.length?[`Attachments: ${extras.join(" · ")}`]:[]),...(preview&&record.preview?[`<!-- outlook-drop-preview:${record.id} -->`,...record.preview.trimEnd().split("\n").slice(1).map(line=>line.replace(/^> ?/,""))]:[])];
+function eventDetails(record:Record,preview=true,extras=record.extras,images=record.inlineImages):string {
+ const body=preview?(record.positionedPreview??record.preview):undefined;
+ const lines=[...(extras.length?[`Attachments: ${extras.join(" · ")}`]:[]),...(body?[`<!-- outlook-drop-preview:${record.id} -->`,...body.trimEnd().split("\n").slice(1).map(line=>line.replace(/^> ?/,""))]:[])];
+ if(images.length&&!(body&&record.positionedPreview))lines.push("",...images);
  return lines.length?`>\n> > [!info]- Meer\n`+lines.map(line=>line?`> > ${line}`:"> >").join("\n")+"\n":"";
 }
 function eventBlock(record:Record,when:Date):string {
  const time=Number.isFinite(when.getTime())?`${String(when.getHours()).padStart(2,"0")}:${String(when.getMinutes()).padStart(2,"0")}`:"—";
  return `> [!activity-message|agent] Mail Drop <span class="activity-meta">${time} · Obsidian</span>\n> <!-- viggobsidian:activity:v1 kind=result goal=mail-import-${record.id.slice(0,16)} -->\n> <!-- outlook-drop-event:${record.id} -->\n> **${mailTitle(record.subject)}**\n> ${record.link}\n`+eventDetails(record)+`> <!-- /outlook-drop-event:${record.id} -->\n`;
+}
+function replaceEventImagePlaceholders(existing:string,record:Record,missing:Set<string>):string {
+ if(!record.placeholders?.size||!missing.size)return existing;
+ const lines=existing.split(/(\r?\n)/);
+ const marker=lines.indexOf(`> > <!-- outlook-drop-preview:${record.id} -->`);
+ if(marker<0)return existing;
+ for(let i=marker+2;i<lines.length&&/^> >(?: |$)/.test(lines[i]);i+=2) {
+  if(lines[i].startsWith("> > [!"))break;
+  const embed=record.placeholders.get(lines[i].slice(4).trimEnd());
+  if(embed&&missing.delete(embed))lines[i]=`> > ${embed}`;
+ }
+ return lines.join("");
 }
 export async function importAttachments(files:MailFile[],folder:string,store:AttachmentStore,when=new Date(),options:{nameMode?:NameMode;preview?:boolean;extract?:boolean;author?:string;eventNoteV1?:boolean}={}) {
  const records:Record[]=[],failures:{name:string;error:unknown}[]=[],previewFailures:string[]=[],extractionFailures:{name:string;error:unknown}[]=[];
@@ -71,13 +85,35 @@ export async function importAttachments(files:MailFile[],folder:string,store:Att
    if(!bytes.byteLength)throw Error("The file is empty. Try dragging the email again.");
    const path=await saveFile(file.name,bytes,folder,store,when,options.nameMode,true),link=store.link(path);
    if(records.some(r=>r.link===link))continue;
-   const record:Record={subject:file.name.replace(/\.eml$/i,""),link,extras:[],id:createHash("sha256").update(new Uint8Array(bytes)).digest("hex")};
+   const record:Record={subject:file.name.replace(/\.eml$/i,""),link,extras:[],inlineImages:[],id:createHash("sha256").update(new Uint8Array(bytes)).digest("hex")};
    records.push(record);
    {
     try {
      const mail=await parseMail(bytes);
      record.subject=mail.subject?.trim()||"No subject";
-     if(options.preview)record.preview=renderMailPreview(mail);
+     if(options.preview)try {
+      const referenced=new Set<string>();
+      record.preview=renderMailPreview(mail,referenced);
+      const byFile=new Map<string,string>();
+      const byCid=new Map<string,string>();
+      const images=inlineImageFiles(mail,referenced);
+      record.hasInlineImages=images.length>0;
+      for(const image of images) {
+       try {
+        const embed=byFile.get(image.name)??`!${store.link(await saveFile(image.name,image.bytes,folder,store,when,undefined))}`;
+        byFile.set(image.name,embed);
+        byCid.set(image.contentId,embed);
+       }catch(error){extractionFailures.push({name:image.name,error});}
+      }
+      if(byCid.size) {
+       record.inlineImages=[...byFile.values()];
+       record.placeholders=new Map();
+       record.positionedPreview=renderMailPreview(mail,undefined,byCid,record.placeholders);
+      }
+     }catch(error){
+      console.error("Mail preview:",error);
+      if(!record.preview){previewFailures.push(file.name);record.preview=failedPreview;}
+     }
      if(options.extract)for(const part of mailFiles(mail)) {
       try {
        const saved=await saveFile(part.name,part.bytes,folder,store,when,options.nameMode);
@@ -97,7 +133,8 @@ export async function importAttachments(files:MailFile[],folder:string,store:Att
   await store.append(current=>{
    added=0;enriched=0;
    for(const record of records) {
-    const {link,preview}=record;
+    const {link}=record;
+    const preview=record.positionedPreview??record.preview;
     if(options.eventNoteV1) {
      if(!current.includes(link)&&!current.includes(`> <!-- outlook-drop-event:${record.id} -->`)) {
       const day=`${when.getFullYear()}-${String(when.getMonth()+1).padStart(2,"0")}-${String(when.getDate()).padStart(2,"0")}`;
@@ -111,20 +148,28 @@ export async function importAttachments(files:MailFile[],folder:string,store:Att
        const existing=current.slice(open,close);
        const extras=record.extras.filter(extra=>!existing.includes(extra));
        const needsPreview=!!preview&&!existing.includes(`<!-- outlook-drop-preview:${record.id} -->`);
-       if(extras.length||needsPreview) {
-        current=current.slice(0,close)+eventDetails(record,needsPreview,extras)+current.slice(close);enriched++;
+       const existingLines=new Set(existing.split(/\r?\n/));
+       const missing=new Set(record.inlineImages.filter(image=>!existingLines.has(`> > ${image}`)));
+       const filled=replaceEventImagePlaceholders(existing,record,missing);
+       if(extras.length||needsPreview||missing.size||filled!==existing) {
+        const details=eventDetails(record,needsPreview,extras,[...missing]);
+        current=current.slice(0,open)+filled+(existing.includes("\r\n")?details.replace(/\n/g,"\r\n"):details)+current.slice(close);enriched++;
        }
       }
      }
      continue;
     }
+    const markerLine=`> <!-- outlook-drop-inline:${record.id} -->`;
+    const boundPreview=record.hasInlineImages&&preview?preview+markerLine+"\n":preview;
     if(!current.includes(link)) {
      const separator=current.endsWith("\n\n")?"":current.endsWith("\n")?"\n":current?"\n\n":"";
-     current+=separator+attachmentBlock(link,when,record.subject,options.author)+(record.extras.length?extrasBlock(record):"")+(preview?"\n"+preview:"");added++;continue;
+     current+=separator+attachmentBlock(link,when,record.subject,options.author)+(record.extras.length?extrasBlock(record):"")+(boundPreview?"\n"+boundPreview:"");added++;continue;
     }
     const linkAt=current.indexOf(link);
     const before=current.slice(0,linkAt);
+    const [heading,,stamp]=before.trimEnd().split(/\r?\n/).slice(-3);
     const registration=before.match(/(?:^|\n)(📎 (?:Toegevoegd op|Added on) [^\n]+\n\n)$/);
+    const ownCapture=!!registration||(heading===`# 📎 ${mailTitle(record.subject).slice("Mail · ".length)}`&&/^(?:Added on|Toegevoegd op) /.test(stamp??""));
     if(registration) {
      const position=before.length-registration[1].length;
      current=current.slice(0,position)+`# 📎 ${mailTitle(record.subject).slice("Mail · ".length)}\n\n`+current.slice(position).replace(/^📎 /,"");enriched++;
@@ -153,10 +198,27 @@ export async function importAttachments(files:MailFile[],folder:string,store:Att
     const whitespace=after.match(/^\s*/)?.[0]??"";
     const failed=[failedPreview,legacyFailedPreview].find(block=>after.slice(whitespace.length).startsWith(block));
     if(failed&&preview!==failedPreview) {
-     current=current.slice(0,start)+whitespace+preview+after.slice(whitespace.length+failed.length);enriched++;continue;
+     current=current.slice(0,start)+whitespace+boundPreview+after.slice(whitespace.length+failed.length);enriched++;continue;
     }
-    if(previewStart.test(after))continue;
-    current=current.slice(0,start)+"\n\n"+preview+after;enriched++;
+    if(previewStart.test(after)) {
+     const quote=after.slice(whitespace.length).match(/^(?:>[^\n]*(?:\n|$))+/)?.[0];
+     if(quote&&(ownCapture||quote.split(/\r?\n/).includes(markerLine))) {
+      const quoteEnd=whitespace.length+quote.length;
+      const nextQuote=after.slice(quoteEnd).match(/^\r?\n((?:>[^\n]*(?:\n|$))+)/)?.[0]??"";
+      const boundBlock=nextQuote.split(/\r?\n/)[2]===markerLine?nextQuote:"";
+      const lines=new Set((quote+boundBlock).split(/\r?\n/));
+      const missing=record.inlineImages.filter(image=>!lines.has(`> ${image}`));
+      if(missing.length) {
+       const insert=start+quoteEnd+boundBlock.length;
+       const eol=quote.includes("\r\n")?"\r\n":"\n";
+       const separator=current[insert-1]==="\n"?"":eol;
+       const header=boundBlock?"":eol+"> [!quote]- Inline images"+eol+markerLine+eol;
+       current=current.slice(0,insert)+separator+header+missing.map(image=>`> ${image}`+eol).join("")+current.slice(insert);enriched++;
+      }
+     }
+     continue;
+    }
+    current=current.slice(0,start)+"\n\n"+boundPreview+after;enriched++;
    }
    return current;
   });
