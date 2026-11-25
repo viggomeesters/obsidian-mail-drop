@@ -54,8 +54,8 @@ Dropping the same email again reuses matching files and links. Different content
 | --- | --- |
 | Attachment drops | Embed images only, choose types to link, use Obsidian's default, or delegate to Attachment Link Rules. |
 | File names | Date + kebab-case, kebab-case only, or original name. Existing full dates are retained. |
-| Email preview | Add readable email text in a collapsed callout. |
-| Extract email attachments | Save explicit attachments beside the EML and add plain links. Inline images stay in the email. Off by default. |
+| Email preview | Add readable email text and locally embedded inline raster images in a collapsed callout. |
+| Extract email attachments | Save explicit attachments beside the EML and add plain links. Off by default. |
 | Added by | Optional name in new email entries. Blank by default. |
 | Native email dragging | Optional macOS reception with a separately installed executable. Off on new installations. |
 | Receiver path | Absolute path to the existing receiver; select Connect after editing. |
